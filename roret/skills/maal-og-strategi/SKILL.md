@@ -20,11 +20,11 @@ strategi_oversikt(company_id=<id>)
 
 Svaret har:
 - **strategi:** situasjonsbilde, valg, hva vi ikke gjør, og antakelsene med
-  signal og status. `None` betyr at ingen strategi er vedtatt.
+  signal og status. `false` betyr at ingen strategi er vedtatt.
 - **budsjett:** årets budsjett mot regnskapet hittil. `{"tilgang": false}`
   betyr at brukeren ikke kan se tallene. Si det, ikke gjett.
 - **selskapsmaal:** ambisjon, faktisk, prognose og status (`pa_vei`,
-  `i_fare`, `bak`, `naadd`, `mangler`, `ikke_startet`). `faktisk` lik `None`
+  `i_fare`, `bak`, `naadd`, `mangler`, `ikke_startet`). `faktisk` lik `false`
   betyr at målet ikke er målt, ikke at det er 0.
 
 Vis kort: valgene, mål som er i fare eller bak, antakelser med svakt
