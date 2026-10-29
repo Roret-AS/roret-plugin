@@ -1,6 +1,6 @@
 {
   "name": "roret",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Roret Assistent: kobler Claude til regnskapet ditt i Roret eller Roret for Odoo, med norske arbeidsflyter for bilag, bank, MVA, purring, lønn, salg, kundeservice, styrearbeid og flytting fra Tripletex, Fiken, PowerOffice og Uni Micro. Hver bruker logger inn med sin egen konto, og agenten kan aldri gjøre mer enn brukeren selv har lov til i Odoo.",
   "author": {
     "name": "Roret AS",
@@ -8,6 +8,10 @@
   },
   "homepage": "https://roret.no",
   "privacyPolicyUrl": "https://roret.no/personvern/assistent.html",
+  "termsOfServiceUrl": "https://roret.no/vilkar",
+  "supportUrl": "mailto:support@roret.no",
+  "documentationUrl": "https://github.com/Roret-AS/roret-plugin/blob/main/roret/README.md",
+  "repository": "https://github.com/Roret-AS/roret-plugin",
   "license": "Proprietary",
   "keywords": [
     "roret",

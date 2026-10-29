@@ -10,7 +10,7 @@
       "name": "roret",
       "source": "./roret",
       "description": "Roret Assistent: regnskap, bank, MVA, purring, lønn, salg, kundeservice, styrearbeid og flytting fra Tripletex, Fiken, PowerOffice og Uni Micro, med Claude som arbeidsflate.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "category": "productivity",
       "keywords": [
         "roret",
