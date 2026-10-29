@@ -1,0 +1,27 @@
+{
+  "name": "roret",
+  "description": "Rorets markedsplass for Claude: pluginen som kobler Claude til regnskapet ditt i Roret.",
+  "owner": {
+    "name": "Roret AS",
+    "url": "https://roret.no"
+  },
+  "plugins": [
+    {
+      "name": "roret",
+      "source": "./roret",
+      "description": "Roret Assistent: regnskap, bank, MVA, purring, lønn, salg, kundeservice, styrearbeid og flytting fra Tripletex, Fiken, PowerOffice og Uni Micro, med Claude som arbeidsflate.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "keywords": [
+        "roret",
+        "odoo",
+        "norge",
+        "regnskap",
+        "mva",
+        "lonn",
+        "crm",
+        "migrering"
+      ]
+    }
+  ]
+}
