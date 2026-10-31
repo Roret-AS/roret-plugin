@@ -30,11 +30,11 @@ Kunde:
 ```
 les_chatter(model="res.partner", res_id=<id>, limit=15)
 hent_aktiviteter(model="res.partner", res_id=<id>)
-odoo_search_read("account.move",
-  [["partner_id", "child_of", <id>], ["move_type", "=", "out_invoice"],
-   ["state", "=", "posted"], ["payment_state", "in", ["not_paid", "partial"]]],
-  ["name", "invoice_date", "invoice_date_due", "amount_residual"])
+hent_forfalte_fakturaer(company_id=<company_id>, move_type="out_invoice", partner_id=<id>)
+hent_fakturaer_som_forfaller(company_id=<company_id>, move_type="out_invoice", partner_id=<id>, date_to=<i dag + 60 dager>)
 ```
+
+Begge tar med fakturaene til kontaktene under kunden.
 
 Er e-post eller kalender koblet til, kan siste kontakt ligge der i stedet for
 i Odoo. Søk på kundens e-postadresse (se `epost-og-kalender`).

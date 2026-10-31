@@ -17,7 +17,8 @@ aldersfordelte_kundefordringer(company_id=<id>, move_type="out_invoice")
 ```
 
 Vis per kunde: antall fakturaer, sum, eldste forfall og dager over forfall.
-Sorter med det eldste og største øverst. Sjekk at kravet faktisk er ubetalt,
+Sorter med det eldste og største øverst. Gjelder det én kunde, hent bare
+hennes: `hent_forfalte_fakturaer(company_id=<id>, move_type="out_invoice", partner_id=<kunde>)`. Sjekk at kravet faktisk er ubetalt,
 på to måter, før du purrer:
 
 1. Uavstemte innbetalinger som er koblet til kunden:

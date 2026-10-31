@@ -1,6 +1,6 @@
 {
   "name": "roret",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Roret Assistent: kobler Claude til regnskapet ditt i Roret eller Roret for Odoo, med norske arbeidsflyter for bilag, bank, MVA, purring, lønn, salg, kundeservice, styrearbeid og flytting fra Tripletex, Fiken, PowerOffice og Uni Micro. Hver bruker logger inn med sin egen konto, og agenten kan aldri gjøre mer enn brukeren selv har lov til i Odoo.",
   "author": {
     "name": "Roret AS",

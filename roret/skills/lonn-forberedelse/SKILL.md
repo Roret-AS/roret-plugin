@@ -68,9 +68,10 @@ Refunderes utlegg med lønnen i selskapet, må de være godkjent før kjøringen
 
 ## Steg 6: Frister
 
-A-meldingen skal leveres innen fristen i måneden etter utbetalingen (normalt
-den 5.). Skattetrekk og arbeidsgiveravgift betales samlet for to måneder.
-Bekreft datoene med `lov_oppslag` eller `frister`-skillen før du skriver dem.
+`frister(company_id=<id>, date_from=<første dag>, date_to=<siste dag + 40 dager>)`
+gir datoene med hjemmel: a-meldingen den 5. i måneden etter utbetalingen,
+forskuddstrekket første virkedag etter utbetalingen, og arbeidsgiveravgiften
+annenhver måned. Bruk dem i sjekklista.
 
 ## Steg 7: Sjekkliste
 

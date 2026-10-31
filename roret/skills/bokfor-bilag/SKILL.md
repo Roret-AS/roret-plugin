@@ -69,24 +69,32 @@ fra det du leste:
    ikke i alle feltene for org.nr, så søk også
    `odoo_search_read("res.partner", ["|", ["company_registry", "=", "<orgnr>"], ["l10n_no_bronnoysund_number", "=", "<orgnr>"]], ["id", "name"])`
    (utelat feltet som ikke finnes). Finnes den ikke, foreslå
-   `opprett_kontakt(name=..., is_company=True, vat=..., company_id=<id>)`
+   `opprett_kontakt(name=..., is_company=True, company_registry="<orgnr>", vat=..., company_id=<id>)`
    og vent på ja. Bruk gjerne `kundesjekk`-skillen.
 2. `opprett_faktura(partner_id=<id>, lines=[...], move_type="in_invoice", invoice_date="YYYY-MM-DD", ref="<leverandørens fakturanr>", company_id=<id>)`
 
-**Kontroller utkastet før bokføring.** Les det tilbake med
-`odoo_search_read("account.move", [["id","=",<move_id>]], ["partner_id","invoice_date","invoice_date_due","ref","amount_untaxed","amount_tax","amount_total","payment_reference"])`
-og linjene med
-`odoo_search_read("account.move.line", [["move_id","=",<move_id>],["display_type","=","product"]], ["name","account_id","tax_ids","price_subtotal"])`.
-Sjekk:
+**Kontroller utkastet før bokføring.** Les det tilbake, med linjene og
+MVA-kodene, i ett kall:
+
+```
+hent_bilag(move_id=<move_id>, company_id=<id>)
+```
+
+`kontroll` i svaret sier om bilaget er i balanse, hvilke linjer som mangler
+konto eller MVA-kode, hva som mangler i hodet (fakturadato, forfall,
+leverandørens fakturanummer, KID), og hvilke andre bilag fra samme
+leverandør som har samme fakturanummer (`mulige_dubletter`). Sjekk i tillegg
+mot dokumentet:
 
 - Leverandør, fakturadato, forfall og fakturanummer stemmer med dokumentet.
 - Beløp eks. MVA, MVA og totalt stemmer med dokumentet på øret.
 - Kostnadskonto og MVA-kode passer (varekjøp, husleie, programvare, reise).
   Kjøp av tjenester fra utlandet skal ha snudd avregning, ikke vanlig
-  inngående MVA.
+  inngående MVA. En linje uten MVA-kode kan være riktig (for eksempel
+  representasjon), men spør.
 - KID eller betalingsreferanse er med, ellers blir betalingen vanskelig.
-- Fakturaen er ikke registrert fra før: søk på leverandør og `ref` i
-  `account.move` før du bokfører.
+- Fakturaen er ikke registrert fra før. Står det noe i `mulige_dubletter`,
+  vis det og spør før du bokfører.
 
 Rett feil med `oppdater_fakturalinje(line_id=..., account_id=..., tax_ids=[...], company_id=<id>)`
 etter ja til den konkrete endringen (fra hva, til hva). Slå opp kontoer og

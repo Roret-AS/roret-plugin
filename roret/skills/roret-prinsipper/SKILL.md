@@ -31,13 +31,12 @@ nøyaktig hva som skjer og sagt ja:
 | Regnskap (kan ikke angres uten motpost) | `bokfor_bilag`, `registrer_betaling`, `avstem_banklinje_mot_faktura`, `avstem_banklinje_mot_fakturaer`, `avstem_banklinje_mot_hovedbokslinje`, `avstem_banklinje_mot_hovedbokslinjer`, `avstem_stripe_utbetaling` |
 | Utkast i regnskapet | `opprett_faktura`, `oppdater_fakturalinje`, `motta_bilag`, `opprett_utlegg_fra_dokument`, `slett_utkastfaktura`, `lag_bilag_for_selskapshandling` |
 | Kontakt med kunder (kan ikke trekkes tilbake) | `send_sms`, `svar_pa_sms`, `send_masseutsendelse`, `send_tidsvindu_sms`, `skriv_i_chatter` med `as_email=True` |
-| Annet som endrer data | `opprett_kontakt`, `opprett_lead`, `slett_lead`, `konverter_lead_til_salgsmulighet`, `oppdater_salgsmulighet`, `planlegg_aktivitet`, `marker_aktivitet_ferdig`, `marker_sms_behandlet`, `opprett_kalenderhendelse`, `last_opp_dokument`, `flytt_dokument`, `arkiver_vedlegg`, `opprett_styremote`, `legg_til_styresak`, `skriv_protokolltekst`, `husk_forklaring`, `foresla_selskapshandling`, `start_selskapshandling_fra_vedtak`, `registrer_maaling`, `koble_fra_odoo`, `odoo_create`, `odoo_write`, `odoo_unlink`, `odoo_call_button` |
+| Annet som endrer data | `opprett_kontakt`, `oppdater_supportsak`, `opprett_lead`, `slett_lead`, `konverter_lead_til_salgsmulighet`, `oppdater_salgsmulighet`, `planlegg_aktivitet`, `marker_aktivitet_ferdig`, `marker_sms_behandlet`, `opprett_kalenderhendelse`, `last_opp_dokument`, `flytt_dokument`, `arkiver_vedlegg`, `opprett_styremote`, `legg_til_styresak`, `skriv_protokolltekst`, `husk_forklaring`, `foresla_selskapshandling`, `start_selskapshandling_fra_vedtak`, `registrer_maaling`, `koble_fra_odoo`, `odoo_create`, `odoo_write`, `odoo_unlink`, `odoo_call_button` |
 
 Lista er ikke uttømmende: ethvert verktøy som oppretter, endrer, sender eller
-sletter noe, krever det samme. `odoo_call_button` mot en metode som bare
-leser (for eksempel `agent_status` eller `roret_brreg_sok`), trenger ikke
-forhåndsvisning. Claude spør likevel om lov før kallet, fordi verktøyet også
-kan endre data. Si da at kallet bare leser.
+sletter noe, krever det samme. Status for MVA-meldingen og oppslag i
+Enhetsregisteret har egne leseverktøy (`mva_status`, `sok_i_enhetsregisteret`).
+Bruk dem, ikke `odoo_call_button`.
 
 Reglene:
 
@@ -124,9 +123,10 @@ mangler. Fullfør det du kan.
 ## 6. De rå Odoo-verktøyene
 
 `odoo_search_read`, `odoo_formatted_read_group` og `odoo_fields_get` er greie
-til å lese det et eget verktøy ikke dekker. `odoo_formatted_read_group` summerer
-per gruppe i Odoo, så bruk den til saldoer og kontrollsummer i stedet for å
-summere sider fra `odoo_search_read`. `odoo_create`, `odoo_write`,
+til å lese det et eget verktøy ikke dekker. Saldo per konto gir
+`saldo_per_konto`. `odoo_formatted_read_group` summerer per gruppe i Odoo, så
+bruk den til andre kontrollsummer i stedet for å summere sider fra
+`odoo_search_read`. `odoo_create`, `odoo_write`,
 `odoo_unlink` og `odoo_call_button` kan skrive hva som helst brukeren har lov
 til, og brukes til skriving bare når en skill sier det uttrykkelig (for
 eksempel `flytt-til-roret`), og alltid med forhåndsvisning. Bruk den aldri

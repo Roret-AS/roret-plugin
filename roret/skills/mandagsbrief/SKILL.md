@@ -13,11 +13,14 @@ hvilke briefen skal dekke). Briefen bare leser. Den endrer ingenting.
 
 La `fra` være i dag og `til` søndag denne uka. Datoer som `YYYY-MM-DD`.
 
-1. Frister de neste 14 dagene: bruk `frister`.
+1. Frister de neste 14 dagene:
+   `frister(company_id=<id>, date_from=<fra>, date_to=<fra + 14 dager>)`. Har
+   selskapet Styring, ta med styrets frister fra `styrets_oversikt`.
 2. Forfalte kundefakturaer:
    `hent_forfalte_fakturaer(company_id=<id>, move_type="out_invoice", limit=20)`.
 3. Regninger som forfaller denne uka:
-   `odoo_search_read("account.move", [["move_type", "=", "in_invoice"], ["state", "=", "posted"], ["payment_state", "in", ["not_paid", "partial"]], ["invoice_date_due", ">=", <fra>], ["invoice_date_due", "<=", <til>], ["company_id", "=", <id>]], ["name", "partner_id", "invoice_date_due", "amount_residual"])`.
+   `hent_fakturaer_som_forfaller(company_id=<id>, move_type="in_invoice", date_from=<fra>, date_to=<til>)`.
+   Bruk `antall` og `sum_restbelop`.
 4. Møter: `hent_kalenderhendelser(date_from=<fra>, date_to=<til>, company_id=<id>)`.
    Er Microsoft 365- eller Google-kalenderen koblet til, ta med møtene
    derfra også (se `epost-og-kalender`), uten dubletter.
@@ -36,7 +39,7 @@ Feiler ett kall (manglende modul eller tilgang), hopp over den delen og skriv
 ```
 ## Uke 44 — Eksempel AS
 
-**Frister:** 5. nov a-melding · 15. nov forskuddstrekk og AGA
+**Frister:** 5. nov a-melding · 16. nov arbeidsgiveravgift
 **Penger:** 412 300 kr i bank. 6 forfalte kundefakturaer, 84 200 kr (eldste 41 dager). 3 regninger forfaller, 23 900 kr
 **Møter:** tir 10:00 Kunde X · tor 17:30 styremøte
 **Oppgaver:** 2 over frist, 4 i dag

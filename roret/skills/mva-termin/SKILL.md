@@ -26,9 +26,9 @@ annenhver måned eller årstermin? Alminnelige terminer:
 | 5 | september–oktober |
 | 6 | november–desember |
 
-Fristen for hver termin skal bekreftes med `lov_oppslag` (eller
-`frister`-skillen) før du skriver en dato. Faller fristen på en helligdag,
-flyttes den.
+Fristen for terminen gir
+`frister(company_id=<id>, date_from=<terminslutt>, date_to=<terminslutt + 75 dager>)`,
+med hjemmel og flytting når fristen faller på helg eller helligdag.
 
 Byttet selskapet til Roret midt i et år, sendes terminene før byttet fra det
 gamle systemet. Spør hvilken termin som er den første fra Roret hvis du er i
@@ -37,16 +37,18 @@ leveres fra det gamle systemet, som om den skulle leveres fra Roret.
 
 ## Steg 2: Status for meldingen i Roret
 
-Har kunden Rorets MVA-melding, gir agent-API-et status, tall, avvik og neste
-steg uten å endre noe. Claude spør om lov før kallet, fordi verktøyet også
-kan endre data. Si at dette bare leser:
+Har kunden Rorets MVA-melding, gir `mva_status` tilstand, beregnet MVA,
+avvik fra kontrollene, Skatteetatens svar, betalingen og neste steg. Det
+leser bare:
 
 ```
-odoo_call_button("l10n.no.mvamelding", "agent_status", args=[<company_id>, <år>, "<termin 1–6 eller aarlig>"])
+mva_status(year=<år>, period="<termin 1–6 eller aarlig>", company_id=<id>)
 ```
 
-Feiler kallet fordi modellen ikke finnes, har kunden ikke modulen. Fortsett
-med steg 3 og pek på regnskapets egen MVA-rapport.
+`neste_handling.beskrivelse` sier hva som gjenstår, og `neste_handling.i_roret`
+hvilken knapp brukeren trykker. Står `krever_menneske`, må brukeren gjøre det
+selv. Sier verktøyet at kunden ikke har MVA-meldingen i Roret, fortsett med
+steg 3 og pek på regnskapets egen MVA-rapport.
 
 ## Steg 3: Kontroller grunnlaget
 
@@ -76,17 +78,15 @@ Kjør disse for terminens datoer (`date_from`, `date_to`):
 
 Vis funnene som en kort liste med det som bør rettes før meldingen lages.
 
-## Steg 4: Lag tallene (bare med ja)
+## Steg 4: Lag tallene
 
-Er grunnlaget klart, og brukeren vil, kan agent-API-et opprette meldingen,
-hente tallene og kjøre Skatteetatens kontroller lokalt. Dette sender ingenting:
+Er grunnlaget klart, ber du brukeren lage tallene i Roret: åpne meldingen for
+terminen (eller lag en ny) og trykk **Hent tallene**. Det henter tallene og
+kjører Skatteetatens kontroller lokalt, og sender ingenting. Agenten gjør
+ikke dette selv.
 
-```
-odoo_call_button("l10n.no.mvamelding", "agent_prepare", args=[<company_id>, <år>, "<termin>"])
-```
-
-Vis beregnet MVA og eventuelle avvik. Blokkerende avvik må rettes før
-innsending.
+Kjør `mva_status` igjen etterpå, og vis beregnet MVA (`fastsatt_mva`) og
+avvikene. Blokkerende avvik må rettes før innsending.
 
 ## Steg 5: Det brukeren gjør selv
 
@@ -103,14 +103,14 @@ Si tydelig hva som gjenstår, og hvor:
 5. Bokfør oppgjøret og betal med beløp og KID fra Skatteetaten, innen
    betalingsfristen.
 
-Kom tilbake og sjekk status med steg 2 når brukeren har sendt. Først når
-statusen er fastsatt, er terminen ferdig.
+Kom tilbake og sjekk status med `mva_status` når brukeren har sendt. Først
+når meldingen står som fastsatt, er terminen ferdig.
 
 ## Viktig
 
 - Tallene fra `mva_sammendrag` er en kontroll, ikke meldingen
   (`roret-prinsipper` §7).
-- Endre aldri MVA-meldingens XML eller kall andre metoder på
-  `l10n.no.mvamelding` enn de to over.
+- Agenten lager, endrer og sender aldri MVA-meldingen. Den leser status med
+  `mva_status`. Alt annet gjør brukeren i Roret.
 - Rettelser i en termin som er sendt, gjøres med en ny melding for samme
   termin. Gjelder det en tidligere periode, slå opp reglene med `lov_gjaldt`.

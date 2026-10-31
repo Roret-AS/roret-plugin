@@ -7,46 +7,52 @@ description: Likviditetsbilde for de neste 30 og 60 dagene — penger i banken n
 
 Gi et ærlig bilde av pengene framover. Skill mellom det som står i
 regnskapet (fakta) og det du anslår (estimat). Bruk `firmaprofil` for
-selskap, MVA-termin og lønn.
+selskap, MVA-termin, lønnsdag og kontoene for trekk og avgift.
 
 ## Steg 1: Hent tallene (parallelt der du kan)
+
+La `d30` være i dag + 30 dager og `d60` i dag + 60 dager.
 
 | Hva | Verktøy |
 |---|---|
 | Bank og kasse i dag | `likvidbeholdning(company_id=<id>)` |
-| Kundefordringer etter alder | `aldersfordelte_kundefordringer(company_id=<id>, move_type="out_invoice")` |
-| Leverandørgjeld etter alder | `aldersfordelte_kundefordringer(company_id=<id>, move_type="in_invoice")` |
+| Kunder som betaler de neste 30 dagene | `hent_fakturaer_som_forfaller(company_id=<id>, move_type="out_invoice", date_to=<d30>)` |
+| Kunder som betaler dag 31–60 | `hent_fakturaer_som_forfaller(company_id=<id>, move_type="out_invoice", date_from=<d30 + 1>, date_to=<d60>)` |
+| Regninger som forfaller de neste 30 dagene | `hent_fakturaer_som_forfaller(company_id=<id>, move_type="in_invoice", date_to=<d30>)` |
+| Regninger dag 31–60 | `hent_fakturaer_som_forfaller(company_id=<id>, move_type="in_invoice", date_from=<d30 + 1>, date_to=<d60>)` |
 | Forfalt fra kunder | `hent_forfalte_fakturaer(company_id=<id>, move_type="out_invoice", limit=50)` |
 | Forfalt til leverandører | `hent_forfalte_fakturaer(company_id=<id>, move_type="in_invoice", limit=50)` |
+| Fordringer og gjeld etter alder | `aldersfordelte_kundefordringer(company_id=<id>, move_type="out_invoice")` og samme med `"in_invoice"` |
 | MVA i terminen som løper | `mva_sammendrag(date_from="<terminstart>", date_to="<i dag>", company_id=<id>)` |
 | Lønn denne måneden | `lonnskjoring_status(period_month="YYYY-MM", company_id=<id>)` |
+| Fristene i vinduet | `frister(company_id=<id>, date_to=<d60>)` |
 
-For forfall innen 30 og 60 dager, hent åpne fakturaer med forfallsdato i
-vinduet:
-
-```
-odoo_search_read("account.move", [["move_type","in",["out_invoice","in_invoice"]],["state","=","posted"],["payment_state","in",["not_paid","partial"]],["invoice_date_due","<=","<i dag + 60>"],["company_id","=",<id>]], ["name","partner_id","move_type","invoice_date_due","amount_residual_signed"], limit=500)
-```
+`sum_restbelop` i `hent_fakturaer_som_forfaller` er summen over alle
+treffene, også når lista er kortere (`flere_enn_vist`). Bruk den i tabellen,
+ikke en sum du regner av lista.
 
 ## Steg 2: Skattetrekk og arbeidsgiveravgift (estimat)
 
-Trekk og avgift for to måneder betales samlet. Saldoen på kontoene for
-forskuddstrekk og skyldig arbeidsgiveravgift gir et anslag på neste betaling.
-Bruk kontoene selskapet har satt opp for a-meldingen hvis feltene finnes
-(`l10n_no_amelding_forskuddstrekk_account_id`,
-`l10n_no_amelding_aga_account_id` på `res.company`, se `firmaprofil`), ellers
-2600 og 2770 i standard kontoplan. La Odoo summere saldoen per konto. Summer
-aldri sider fra `odoo_search_read`: den gir maks 1000 linjer, og summen blir
-stille feil når kontoen har flere.
+Reglene (bekreft med `lov_oppslag` før du skriver datoer):
+
+- **Forskuddstrekket** forfaller første virkedag etter hver lønnsutbetaling.
+  Plasser det sammen med lønnen, i samme kolonne.
+- **Arbeidsgiveravgiften** for to måneder betales den 15. i måneden etter
+  terminen. `frister` gir datoen.
+
+Saldoen på kontoene gir anslaget. Bruk kontoene fra firmaprofilen
+(`lonn.konto_forskuddstrekk`, `lonn.konto_arbeidsgiveravgift`), ellers 2600
+og 2770 i standard kontoplan:
 
 ```
-odoo_formatted_read_group("account.move.line", [["account_id","in",[<trekkonto>,<avgiftskonto>]],["parent_state","=","posted"],["company_id","=",<id>]], groupby=["account_id"], aggregates=["balance:sum"], company_id=<id>)
+saldo_per_konto(account_ids=[<trekkonto>, <avgiftskonto>], company_id=<id>)
+saldo_per_konto(account_codes=["2600", "2770"], company_id=<id>)
 ```
 
-Merk dette som estimat. Plasser MVA, skattetrekk og arbeidsgiveravgift i
-kolonnen der fristen faller, ikke der perioden er: MVA for terminen som løper
-nå, betales først etter terminslutt. Hent fristene fra `frister`-skillen, og
-bekreft dem med `lov_oppslag` før du skriver datoer.
+Saldoen er negativ for gjeld: 2600 med −41 200 betyr 41 200 kr skyldig
+trekk. Merk tallene som estimat. Plasser MVA og arbeidsgiveravgift i
+kolonnen der fristen faller, ikke der perioden er: MVA for terminen som
+løper nå, betales først etter terminslutt.
 
 ## Steg 3: Sett opp bildet
 
@@ -59,9 +65,9 @@ bekreft dem med `lov_oppslag` før du skriver datoer.
 | Inn: kundefakturaer som forfaller | +185 000 | +96 000 |
 | Ut: leverandørfakturaer som forfaller | −121 500 | −64 000 |
 | Ut: MVA (estimat) | −48 200 | |
-| Ut: skattetrekk og arbeidsgiveravgift (estimat) | | −71 900 |
-| Ut: netto lønn (estimat) | −160 000 | −160 000 |
-| **Beregnet saldo** | **267 600** | **67 700** |
+| Ut: arbeidsgiveravgift (estimat) | | −31 900 |
+| Ut: netto lønn og forskuddstrekk (estimat) | −200 000 | −200 000 |
+| **Beregnet saldo** | **227 600** | **27 700** |
 ```
 
 Under tabellen:

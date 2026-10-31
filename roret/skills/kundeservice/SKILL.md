@@ -68,10 +68,29 @@ Interne notater (til kolleger) sendes med `as_email=False`, som er standard.
 Må noen andre gjøre noe:
 `planlegg_aktivitet(model="helpdesk.ticket", res_id=<id>, activity_type_id=..., summary=..., user_id=...)`.
 
-Å endre status eller ansvarlig på saken har ikke eget verktøy. Be brukeren
-gjøre det i Odoo, eller bruk
-`odoo_write("helpdesk.ticket", [<id>], {"user_id": <id>})` bare
-etter uttrykkelig ja til akkurat den endringen.
+## Steg 6: Stadium, ansvarlig og prioritet
+
+Vis stadiene saken kan flyttes til:
+
+```
+hent_supportstadier(team_id=<sakens team>, company_id=<id>)
+```
+
+Si hva du vil endre (fra hva, til hva), og endre etter ja:
+
+```
+oppdater_supportsak(ticket_id=<id>, stage_id=<stadium>, company_id=<id>)
+oppdater_supportsak(ticket_id=<id>, user_id=<bruker>, company_id=<id>)
+oppdater_supportsak(ticket_id=<id>, unassign=True, priority="2", company_id=<id>)
+```
+
+Ansvarlig er en bruker (res.users), ikke en ansatt. Finn id-en på andre
+saker i `hent_supportsaker`, eller med
+`odoo_search_read("res.users", [["name", "ilike", "<navn>"]], ["id", "name"])`.
+
+Har stadiet `sender_epost_til_kunden`, sender Odoo e-post til kunden når
+saken flyttes dit. Verktøyet avviser da kallet. Si det til brukeren, og kall
+igjen med `stage_email_ok=True` bare etter et ja til den e-posten.
 
 ## Oversikt over supporttrykket
 

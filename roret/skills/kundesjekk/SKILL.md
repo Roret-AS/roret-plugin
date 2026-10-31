@@ -13,7 +13,7 @@ Selskap: `firmaprofil`. Skriveregler: `roret-prinsipper`.
 med org.nr eller navn, og sier samtidig om selskapet alt finnes som kontakt:
 
 ```
-odoo_call_button("res.partner", "roret_brreg_sok", args=["<org.nr eller navn>"], kwargs={"antall": 5})
+sok_i_enhetsregisteret(query="<org.nr eller navn>", limit=5, company_id=<id>)
 ```
 
 Svaret har `treff` (org.nr, navn, `beskrivelse`, `verdier` som kan brukes
@@ -22,8 +22,8 @@ registeret ikke svarer. `beskrivelse` slutter med SLETTET, KONKURS, UNDER
 AVVIKLING eller UNDER TVANGSAVVIKLING når selskapet ikke driver. Si det
 øverst. Er lista tom og `sokt` er `false`, var teksten for kort eller
 ikke et gyldig org.nr, eller brukeren har ikke rett til å lage kontakter.
-Finnes ikke metoden, har kunden ikke oppslaget. Gå videre til det åpne
-API-et under.
+Sier verktøyet at kunden ikke har oppslaget, gå videre til det åpne API-et
+under.
 
 **Ellers det åpne API-et.** Enhetsregisteret har et åpent API uten
 innlogging. Bruk Claudes egen nettilgang (WebFetch eller tilsvarende). Det
@@ -104,27 +104,21 @@ odoo_search_read("res.partner", [["is_company", "=", true], ["vat", "!=", false]
 Vis kortet slik det blir, og opprett etter ja:
 
 ```
-opprett_kontakt(name=<navn>, is_company=True, vat=<org.nr i samme format som de andre>,
+opprett_kontakt(name=<navn>, is_company=True, company_registry=<org.nr>,
+                vat=<MVA-nummer i samme format som de andre, bare når MVA-registrert>,
                 street=<adresse>, zip=<postnr>, city=<poststed>, country_id=<Norge>,
                 email=<hvis kjent>, phone=<hvis kjent>,
                 comment="Kontrollert i Enhetsregisteret <dato>", company_id=<company_id>)
 ```
 
-Avviser Odoo org.nr-formatet, vis feilen og spør i stedet for å prøve
-varianter i blinde.
+`company_registry` er organisasjonsnummeret. Verktøyet sjekker
+kontrollsifferet og setter det også i Rorets norske felt når kunden har det.
+Kom treffet fra Rorets oppslag, står verdiene i `verdier` (bruk
+`verdier.country_id.id` som `country_id`). Avviser Odoo MVA-nummeret, vis
+feilen og spør i stedet for å prøve varianter i blinde.
 
-Organisasjonsnummeret har også egne felt i Roret, som `opprett_kontakt` ikke
-setter. Kom treffet fra Rorets oppslag, står de i `verdier`. Sett dem på det
-nye kortet i samme godkjenning (denne skillen tillater dette ene
-`odoo_write`-kallet):
-
-```
-odoo_write("res.partner", [<ny partner-id>], {"company_registry": "<orgnr>", "l10n_no_bronnoysund_number": "<orgnr>"})
-```
-
-Finnes ikke feltet `l10n_no_bronnoysund_number` (se `odoo_fields_get("res.partner", ["type"])`),
-sett bare `company_registry`. Kontaktpersoner (daglig leder) opprettes bare hvis
-brukeren ber om det, med `parent_id` satt til firmaet.
+Kontaktpersoner (daglig leder) opprettes bare hvis brukeren ber om det, med
+`parent_id` satt til firmaet.
 
 ## Personvern
 
