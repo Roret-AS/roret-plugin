@@ -1,6 +1,6 @@
 ---
 name: mandagsbrief
-description: Kort brief for uka som kommer — frister, forfalte kundefakturaer og regninger som forfaller, møter, egne oppgaver, oppfølgingspunkter fra styret og banklinjer som venter på avstemming. Bruk denne når brukeren ber om mandagsbrief, ukestart, «hva skjer denne uka», eller når en planlagt oppgave kjører den hver mandag.
+description: Kort brief for uka som kommer — frister, forfalte kundefakturaer og regninger som forfaller, møter, egne oppgaver, oppfølgingspunkter fra styret, banklinjer som venter på avstemming, og innleggene, nyhetsbrevene og kampanjene i markedsføringen. Bruk denne når brukeren ber om mandagsbrief, ukestart, «hva skjer denne uka», eller når en planlagt oppgave kjører den hver mandag.
 ---
 
 # Mandagsbrief
@@ -30,9 +30,17 @@ La `fra` være i dag og `til` søndag denne uka. Datoer som `YYYY-MM-DD`.
 7. Bank: `hent_uavstemte_banklinjer(company_id=<id>, limit=50)` (bare
    antallet og eldste dato).
 8. Likviditet: `likvidbeholdning(company_id=<id>)`.
+9. Markedsføring (bare der den er installert):
+   `hent_innholdskalender(fra=<fra>, til=<til>, company_id=<id>)` for
+   innleggene og nyhetsbrevene denne uka, og hvor mange som venter på
+   godkjenning, `hent_kampanjer(fra=<fra>, til=<til>, company_id=<id>)`
+   for kampanjene som går, med kostnaden mot budsjettet, og
+   `markedsoversikt(company_id=<id>)` for forrige uke: ukerapporten, med de
+   samme tallene som mandagsrapporten på e-post.
 
 Feiler ett kall (manglende modul eller tilgang), hopp over den delen og skriv
-én linje om det nederst.
+én linje om det nederst. Svarer markedsverktøyene at Markedsføring ikke er
+installert, utelat linja uten å nevne det.
 
 ## Format
 
@@ -44,6 +52,7 @@ Feiler ett kall (manglende modul eller tilgang), hopp over den delen og skriv
 **Møter:** tir 10:00 Kunde X · tor 17:30 styremøte
 **Oppgaver:** 2 over frist, 4 i dag
 **Venter:** 12 uavstemte banklinjer (eldste 9. okt). 1 forfalt oppfølgingspunkt fra styret
+**Marked:** Forrige uke 9 leads (+3), 3 200 kr, 356 kr per lead. 3 innlegg planlagt (1 venter på godkjenning), nyhetsbrev torsdag. Vårkampanjen: 2 500 av 10 000 kr brukt
 
 **Tre ting denne uka:**
 1. …

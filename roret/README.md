@@ -2,7 +2,8 @@
 
 Pluginen kobler Claude til regnskapet ditt i **Roret** eller **Roret for Odoo**,
 og gir Claude norske arbeidsflyter for det en liten bedrift gjør hver uke:
-bilag, bank, MVA, purring, lønn, salg, kundeservice og styrearbeid. Den
+bilag, bank, MVA, purring, lønn, salg, markedsføring, kundeservice og
+styrearbeid. Den
 hjelper deg også å flytte fra Tripletex, Fiken, PowerOffice eller Uni Micro.
 
 Claude gjør jobben i selve regnskapet, ikke i et regneark ved siden av.
@@ -78,6 +79,20 @@ eksempel `/roret:purring`.
 | `sms-innboks` | Går gjennom innkommende SMS og svarer i samme tråd |
 | `avtale-gjennomgang` | Peker på risiko i en avtale, med henvisning til norsk lov |
 
+### Markedsføring
+
+Krever Markedsføring i Roret. Nyhetsbrev går bare til dem som har samtykket,
+eller til eksisterende kunder der vilkårene i markedsføringsloven § 15 er
+oppfylt, og innlegg godkjennes av den markedsansvarlige før de publiseres.
+
+| Skill | Hva den gjør |
+|---|---|
+| `markedsplan` | Fyller markedsprofilen i en samtale: tilbud, målgrupper, budskap, tone, kanaler og budsjett |
+| `kampanje` | Planlegger en kampanje med mål, budsjett og sporingslenker, og skriver lærdommen etterpå |
+| `nyhetsbrev` | Skriver nyhetsbrevet og viser hvem som kan få det, og hvorfor ikke resten |
+| `innlegg` | Utkast til innlegg på LinkedIn, Facebook og Instagram i innholdskalenderen |
+| `markedsrapport` | Leads, salg og kostnad per kilde og kampanje, kostnad per lead og tre forslag |
+
 ### Styring
 
 | Skill | Hva den gjør |
@@ -90,7 +105,7 @@ eksempel `/roret:purring`.
 
 | Skill | Hva den gjør |
 |---|---|
-| `mandagsbrief` | Uka som kommer: frister, forfalte poster, møter og oppgaver |
+| `mandagsbrief` | Uka som kommer: frister, forfalte poster, møter, oppgaver og markedsføringen |
 | `frister` | Selskapets fristkalender: MVA, a-melding, skattetrekk, årsoppgjør |
 
 ### Flytte til Roret
