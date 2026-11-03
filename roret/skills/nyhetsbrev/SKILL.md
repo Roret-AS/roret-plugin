@@ -52,7 +52,7 @@ Vis utkastet og vent på ja.
 
 ## Steg 4: Lag utkastet
 
-Til en liste:
+Bare til en liste:
 
 ```
 lag_nyhetsbrevutkast(emne=<emne>, innhold_html=<html>, liste_ids=[<id>],
@@ -60,13 +60,19 @@ lag_nyhetsbrevutkast(emne=<emne>, innhold_html=<html>, liste_ids=[<id>],
                      forhandsvisning=<tekst>, company_id=<id>)
 ```
 
-Til leads: `lead_ids=[...]` i stedet for `liste_ids`. Utkastet sendes ikke.
+Utkastet sendes ikke. Til leads lager du ikke noe utkast. Utsendelsen lages i
+steg 6, og et utkast her ville blitt liggende igjen i E-postmarkedsføring og
+i innholdskalenderen.
 
 ## Steg 5: Hvem kan få det
+
+Til en liste:
 
 ```
 mottakere_med_samtykke(mailing_id=<id fra utkastet>, company_id=<id>)
 ```
+
+Til leads: `mottakere_med_samtykke(lead_ids=[...], company_id=<id>)`.
 
 Vis `kan_faa`, fordelingen per grunnlag (samtykke og kundeforhold) og hvorfor
 resten holdes utenfor (`grunner`). Svaret har bare antall. Hent aldri navn
@@ -85,10 +91,13 @@ eller adresser for å sende til dem på andre måter.
 
 - **Til en liste:** brukeren sender eller planlegger utsendelsen i
   E-postmarkedsføring i Odoo. Porten avgjør på nytt da.
-- **Til leads:** `send_masseutsendelse(subject=..., body_html=..., lead_ids=[...], campaign=<kampanjens navn>, company_id=<id>)`.
-  Det blir et forslag som et menneske godkjenner, og kortet viser hvor mange
-  som holdes utenfor. Sjekk først med
-  `mottakere_med_samtykke(lead_ids=[...], company_id=<id>)`.
+- **Til leads:** `send_masseutsendelse(subject=..., body_html=..., lead_ids=[...], campaign=<utm_navn>, company_id=<id>)`.
+  `campaign` er kampanjens `utm_navn` nøyaktig slik `hent_kampanjer` gir det.
+  Det er navnet i lenkene. Bruk ikke `navn`, som er tittelen. To kampanjer kan
+  ha samme tittel, og tittelen og navnet i lenkene kan være ulike. Et annet
+  navn treffer feil kampanje eller lager en ny, og da kommer tallene ikke med i
+  `kampanjeresultat`. Det blir et forslag som et menneske godkjenner, og
+  kortet viser hvor mange som holdes utenfor.
 
 Svarer Odoo at nyhetsbrev krever oppsett hos Roret, er serveren for
 e-postmarkedsføring ikke satt opp i basen. Da går ingen nyhetsbrev ennå. Si
