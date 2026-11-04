@@ -1,7 +1,11 @@
 # Metode: overføringen steg for steg
 
-Kallene under er de eneste kallene med `odoo_create`, `odoo_write` og
-`odoo_call_button` som `flytt-til-roret` tillater.
+Hovedboka, kontoplanen, journalene, bankkontoene og låsedatoene er låst for
+Assistent, også som forslag. Det brukeren gjør i Odoo, forbereder du (tabellene
+og listene) og kontrollerer etterpå (leser tilbake og avstemmer). Det eneste
+kallet med `odoo_create` som `flytt-til-roret` tillater, er kundene og
+leverandørene i steg 7. Bokføring går gjennom `bokfor_bilag`, som blir et
+forslag brukeren godkjenner.
 Vis alltid hva som skal skrives (tabell med kontoer, beløp, partnere) og vent
 på ja før hvert kall som skriver. Ett ja dekker én godkjent tabell, også når
 den skrives i flere bolker. Det er derfor unntaket i `roret-prinsipper` §2
@@ -43,16 +47,13 @@ Mapp på kontonummer først. Både kildesystemene og Roret bygger på NS 4102.
   SAF-T (1xxx eiendeler, 2xxx egenkapital og gjeld, 3xxx inntekt, 4xxx–8xxx
   kostnader). Vis tabellen og få ja.
 
-Opprett nye kontoer og overgangskontoen 1599 i én operasjon. `load` ruller
-tilbake hele kallet hvis én rad feiler, og den eksterne id-en gjør at kallet
-kan kjøres igjen uten dubletter:
-
-```
-odoo_call_button("account.account", "load", args=[["id", "code", "name", "account_type", "reconcile"], [["migrering_konto_1599", "1599", "Overgangskonto migrering", "asset_current", "False"], ["migrering_konto_30010", "30010", "Salg nettbutikk", "income", "False"]]], company_id=<C>)
-```
-
-Sjekk svaret: `ids` er en liste når alt gikk bra, og `messages` sier hva som
-feilet ellers. **1599 skal ikke ha MVA** (`tax_ids` tom).
+**Nye kontoer og overgangskontoen 1599 opprettes i Odoo inntil videre.**
+Kontoplanen er låst for Assistent, også som forslag. Vis den godkjente tabellen (nummer, navn, type, avstemmbar) og be brukeren
+opprette kontoene under Regnskap → Konfigurasjon → Kontoplan, eller importere
+tabellen der. Mangler brukeren rollen: Roret-kunder ber Roret, og i Roret for
+Odoo gjør administratoren det. Les kontoene på nytt etterpå med kallet over,
+og kontroller at hver konto i tabellen finnes med riktig type. **1599 skal
+ikke ha MVA** (`tax_ids` tom).
 
 ## Steg 5: MVA-kodene
 
@@ -74,12 +75,10 @@ på nye kontoer. Åpningsbalansen og de åpne fakturaene skal **ikke** ha MVA.
 odoo_search_read("account.journal", [["type", "=", "bank"], ["company_id", "=", <C>]], ["id", "name", "code", "default_account_id", "bank_account_id"])
 ```
 
-Mapp hver bankkonto i kilden til en bankjournal. Mangler en, opprett den
-etter ja, og les deretter kontoen den fikk:
-
-```
-odoo_create("account.journal", {"name": "<bank og konto>", "type": "bank", "code": "<BNK2>", "bank_acc_number": "<kontonummer>"}, company_id=<C>)
-```
+Mapp hver bankkonto i kilden til en bankjournal. Mangler en, vis navn,
+kode og kontonummer, og be brukeren opprette den i Odoo (Regnskap →
+Konfigurasjon → Journaler, type Bank). Les journalene på nytt etterpå med
+kallet over, og noter kontoen hver fikk (`default_account_id`).
 
 Saldoen fra kildens bankkonto skal føres på journalens konto
 (`default_account_id`) i åpningsbalansen.
@@ -95,35 +94,52 @@ odoo_search_read("res.partner", [["is_company", "=", true]], ["id", "name", "vat
 ```
 
 (utelat felt som ikke finnes, og bruk `offset` hvis det er flere enn 1000).
-Opprett i bolker på 100–200 med `load`. Ta med `l10n_no_bronnoysund_number`
-når feltet finnes, fordi EHF-adressen i Odoo avhenger av det:
+Opprett med `odoo_create` og en liste, i bolker på **høyst 50**: så mange
+nye poster kan ett forslag ha. Ta med `l10n_no_bronnoysund_number` når
+feltet finnes, fordi EHF-adressen i Odoo avhenger av det:
 
 ```
-odoo_call_button("res.partner", "load", args=[["id", "name", "is_company", "company_registry", "l10n_no_bronnoysund_number", "vat", "ref", "street", "zip", "city", "country_id/id", "email", "phone", "customer_rank", "supplier_rank"], [["migrering_kunde_15000", "Eksempel AS", "True", "912345678", "912345678", "NO912345678MVA", "15000", "Storgata 1", "0155", "Oslo", "base.no", "post@eksempel.no", "+47 22 00 00 00", "1", "0"]]], company_id=<C>)
+odoo_create("res.partner", [{"name": "Eksempel AS", "is_company": true, "company_registry": "912345678", "l10n_no_bronnoysund_number": "912345678", "vat": "NO912345678MVA", "ref": "15000", "street": "Storgata 1", "zip": "0155", "city": "Oslo", "country_id": <NO>, "email": "post@eksempel.no", "phone": "+47 22 00 00 00", "customer_rank": 1, "supplier_rank": 0}], company_id=<C>)
 ```
 
+- **Firmaer og kontakter med org.nr eller MVA-nummer blir forslag.**
+  `is_company`, `company_registry` og `vat` krever godkjenning, så kallet
+  oppretter ingenting: det blir et forslag i Roret-appen eller i Odoo, og
+  svaret er en feil som sier at forslaget venter. Det er ikke en feil i
+  kallet. Ikke prøv igjen. Be brukeren godkjenne forslaget, og vent på
+  bekreftelsen før neste bolk. Personer uten disse feltene opprettes med en
+  gang.
+- Det er ingen ekstern id, så et kall som kjøres på nytt, lager dubletter.
+  Søk på `ref` før en bolk kjøres igjen, og ta bare med dem som mangler.
 - `ref` er kundenummeret eller leverandørnummeret i det gamle systemet.
 - `vat` med «MVA» bare når partneren er MVA-registrert.
 - Les tilbake antallet etterpå og sammenlign med lista.
 
 ## Steg 8: Leverandørenes bankkontoer
 
+**Bankkontoene legges inn i Odoo inntil videre.** Kontoene betalinger går
+til, er låst for Assistent, også som forslag. Vis lista
+(leverandør, `ref` og kontonummer) og be brukeren legge dem inn på kontakten
+(Bankkontoer) eller importere lista i Odoo. Les dem tilbake etterpå:
+
 ```
-odoo_call_button("res.partner.bank", "load", args=[["id", "partner_id/id", "acc_number"], [["migrering_bank_20001", "migrering_lev_20001", "12345678903"]]], company_id=<C>)
+odoo_search_read("res.partner.bank", [["partner_id.supplier_rank", ">", 0]], ["partner_id", "acc_number", "allow_out_payment"], limit=1000, company_id=<C>)
 ```
 
-Importerte bankkontoer er ikke godkjent for utbetaling. Vis lista og be
+Bankkontoer som er lagt inn eller importert, er ikke godkjent for utbetaling. Vis lista og be
 brukeren godkjenne dem i Odoo (kontakt → bankkontoer). Mangler brukeren
 retten: Roret-kunder ber Roret, og i Roret for Odoo gjør administratoren det.
 Ikke sett godkjenningen selv.
 
 ## Steg 9: Migreringsjournaler
 
-Egne journaler holder Rorets fakturanummerserie ren:
+Egne journaler holder Rorets fakturanummerserie ren. Be brukeren opprette
+dem i Odoo (Regnskap → Konfigurasjon → Journaler): «Migrering kunder» (type
+Salg, kode MIGK) og «Migrering leverandører» (type Innkjøp, kode MIGL), begge
+med egen nummerserie for kreditnotaer. Les dem tilbake:
 
 ```
-odoo_create("account.journal", {"name": "Migrering kunder", "type": "sale", "code": "MIGK", "refund_sequence": true}, company_id=<C>)
-odoo_create("account.journal", {"name": "Migrering leverandører", "type": "purchase", "code": "MIGL", "refund_sequence": true}, company_id=<C>)
+odoo_search_read("account.journal", [["code", "in", ["MIGK", "MIGL"]], ["company_id", "=", <C>]], ["id", "name", "type", "default_account_id", "refund_sequence"])
 ```
 
 Kontroller at journalene ikke har standardkonto med MVA.
@@ -151,22 +167,20 @@ Ved terminstart midt i året går resultatkontoene med:
 3. Når alle månedsbilagene og de åpne fakturaene er inne, står 1599 i null
    (K5).
 
-Vis bilaget som tabell (konto, debet, kredit, kilde i SAF-T) og summene. Finn
-journalen for diverse bilag:
+Lag bilaget som tabell (konto, tekst, debet, kredit, kilde i SAF-T) med
+summene, og få ja. Brukeren fører det i Odoo som et bilag i journalen for
+diverse (Regnskap → Regnskap → Bilag, dato `<D-1>`, referanse
+«Åpningsbalanse fra <system>, SAF-T <år>»), og lar det stå som utkast. Les
+utkastet tilbake og sammenlign med tabellen linje for linje:
 
 ```
-odoo_search_read("account.journal", [["type", "=", "general"], ["company_id", "=", <C>]], ["id", "name", "code"])
+odoo_search_read("account.move.line", [["move_id.ref", "=", "Åpningsbalanse fra <system>, SAF-T <år>"], ["company_id", "=", <C>]], ["move_id", "account_id", "name", "debit", "credit", "tax_ids"], limit=500, company_id=<C>)
 ```
 
-Opprett som utkast etter ja:
-
-```
-odoo_create("account.move", {"move_type": "entry", "journal_id": <diverse>, "date": "<D-1>", "ref": "Åpningsbalanse fra <system>, SAF-T <år>", "line_ids": [[0, 0, {"account_id": <bank>, "name": "Bank", "debit": 250000}], [0, 0, {"account_id": <1599>, "name": "Kundereskontro", "debit": 80000}], [0, 0, {"account_id": <1599>, "name": "Leverandørreskontro", "credit": 45000}]]}, company_id=<C>)
-```
-
-Fest dokumentasjonen til bilaget (saldobalansen fra det gamle systemet), og
-bokfør med `bokfor_bilag(move_id=<id>, company_id=<C>)`. Verktøyet nekter hvis
-bilaget ikke balanserer.
+Stemmer det, fest dokumentasjonen til bilaget (saldobalansen fra det gamle
+systemet) og bokfør med `bokfor_bilag(move_id=<id>, company_id=<C>)`. Det
+blir et forslag brukeren godkjenner, og verktøyet nekter hvis bilaget ikke
+balanserer.
 
 ## Steg 11: Åpne fakturaer
 
@@ -175,21 +189,16 @@ partnerens utgående saldo, og totalen lik saldoen på 1500 og 2400. Stemmer det
 ikke, stopp og finn forskjellen sammen med brukeren.
 
 Hver åpen post blir en faktura i migreringsjournalen, med restbeløpet, ikke
-opprinnelig beløp. `opprett_faktura` kan ikke brukes: den mangler forfall, KID
-og regnskapsdato. Sjekk først at feltet `is_imported` finnes:
-
-```
-odoo_fields_get("account.move.line", ["type"])
-```
-
-Opprett som utkast (kreditnotaer får `out_refund` eller `in_refund`):
-
-```
-odoo_create("account.move", {"move_type": "out_invoice", "journal_id": <MIGK>, "partner_id": <partner>, "ref": "<originalt fakturanummer>", "invoice_date": "<fakturadato>", "invoice_date_due": "<forfall>", "date": "<D-1>", "payment_reference": "<original KID>", "invoice_line_ids": [[0, 0, {"name": "Åpen post fra <system>, faktura <nr>", "account_id": <1599>, "quantity": 1, "price_unit": <restbeløp>, "tax_ids": [[6, 0, []]], "is_imported": true}]]}, company_id=<C>)
-```
-
-For leverandørfakturaer: `move_type` `in_invoice`, journalen MIGL, og
-`partner_bank_id` når leverandørens bankkonto er kjent.
+opprinnelig beløp. Fakturaene er låst for Assistent, og `opprett_faktura`
+mangler forfall, KID og regnskapsdato. Lag derfor lista, og brukeren
+importerer den i Odoo (Regnskap → Kunder → Fakturaer, og Leverandører →
+Fakturaer, Importer) som utkast. Én rad per åpen post: partner, journal MIGK
+(kunder) eller MIGL (leverandører), type (faktura eller kreditnota),
+originalt fakturanummer (`ref`), fakturadato, forfall (`invoice_date_due`),
+regnskapsdato `<D-1>`, original KID (`payment_reference`), og én linje med
+teksten «Åpen post fra <system>, faktura <nr>», konto 1599, restbeløpet og
+ingen MVA. For leverandørfakturaer også leverandørens bankkonto når den er
+kjent.
 
 Hvorfor feltene betyr noe:
 
@@ -208,11 +217,11 @@ Kontroller utkastene før bokføring:
 odoo_search_read("account.move", [["journal_id", "in", [<MIGK>, <MIGL>]], ["state", "=", "draft"]], ["name", "partner_id", "amount_total", "amount_tax", "invoice_date_due", "payment_reference"], limit=500)
 ```
 
-Alle skal ha `amount_tax` 0, forfall og KID. Bokfør samlet etter ja:
-
-```
-odoo_call_button("account.move", "action_post", ids=[<id1>, <id2>], company_id=<C>)
-```
+Alle skal ha `amount_tax` 0, forfall og KID, og antallet og summen per
+partner skal stemme med lista. Bokfør etter ja: få bilag med
+`bokfor_bilag(move_id=<id>, company_id=<C>)` (hvert blir et forslag), mange
+samlet av brukeren i Odoo (merk utkastene → Bokfør). Les tilstanden tilbake
+med kallet over og `["state", "=", "posted"]`.
 
 ## Steg 12: Avstemmingsrapporten
 
@@ -236,17 +245,19 @@ grønn eller rød, og hvem som godkjente. Last den opp i arkivet med
 
 ## Steg 13: Lås perioden
 
-Når rapporten er godkjent, lås alt før byttedatoen så ingen fører i
-migreringsperioden ved en feil:
+Når rapporten er godkjent, skal alt før byttedatoen låses, så ingen fører i
+migreringsperioden ved en feil. Låsedatoene settes av brukeren i Odoo
+(Regnskap → Konfigurasjon → Innstillinger, Låsedatoer): `<D-1>` for alle og
+for MVA. Les dem tilbake:
 
 ```
-odoo_write("res.company", [<C>], {"fiscalyear_lock_date": "<D-1>", "tax_lock_date": "<D-1>"}, company_id=<C>)
+odoo_search_read("res.company", [["id", "=", <C>]], ["fiscalyear_lock_date", "tax_lock_date"])
 ```
 
 ## Lønn
 
-Inngående feriepenger og feriepengegrunnlag per ansatt settes på den ansatte
-(felt som begynner med `l10n_no_inngaende_feriepenger`, se
+Inngående feriepenger og feriepengegrunnlag per ansatt settes av brukeren
+på den ansatte i Odoo (felt som begynner med `l10n_no_inngaende_feriepenger`, se
 `odoo_fields_get("hr.employee", ["string"])`). Hittil-i-år-tall for trekk,
 arbeidsgiveravgift og pensjon kan ikke legges inn ennå. Arbeidsforholds-ID-en
 fra det gamle systemet skal videreføres på arbeidsforholdet. Avklar flytting

@@ -144,6 +144,17 @@ migreringsutkast i `flytt-til-roret`. Gir et kall feilen «cannot marshal None»
 utført, les posten på nytt for å se om endringen gikk gjennom før du prøver
 igjen.
 
+Krever regelen godkjenning, blir et rått kall et **forslag** i Roret, ikke
+en endring. Svaret er da en feil som sier at forslaget venter på godkjenning i
+Roret-appen eller i Odoo. Ingenting er gjort. Ikke prøv igjen (samme kall gir
+samme forslag), og ikke prøv rundt med et annet verktøy. Si til brukeren at
+forslaget venter, og hvor. Kortet lager Roret selv av postene, med gammel og
+ny verdi for hvert felt. En knapp (`odoo_call_button`) kan bare foreslås slik
+den er i Odoo: en metode som heter `action_…` eller `button_…`, på postene,
+uten andre argumenter enn konteksten. Blir kallet stoppet (hovedboka, lønn,
+tilganger, kontaktposten til selskapet eller en bruker, eller et felt eller en
+knapp med eget verktøy), si hvorfor, og bruk verktøyet meldingen peker på.
+
 ## 7. Ledelsestall og myndighetsrapporter
 
 `resultatsammendrag`, `salgssammendrag`, `toppkunder`, `mva_sammendrag`,

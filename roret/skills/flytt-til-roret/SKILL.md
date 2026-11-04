@@ -20,9 +20,11 @@ systemet er dokumentasjonen, og de skal oppbevares uansett.
 
 **Slik jobber du:** ett steg om gangen. Hver ⛔ er et stopp der brukeren ser
 hva som skal skje og sier ja før du skriver noe. Følg `roret-prinsipper`.
-Denne skillen tillater `odoo_create`, `odoo_write` og `odoo_call_button` for
-kallene i [metode.md](metode.md),
-og bare de, alltid etter forhåndsvisning. Les metode.md før steg 4.
+Kontoplanen, journalene, bilagene, bankkontoene og låsedatoene er låst for
+Assistent. Dem fører brukeren i Odoo, og du forbereder listene og
+kontrollerer etterpå. Skillen tillater `odoo_create` bare for kundene og
+leverandørene i [metode.md](metode.md), alltid etter forhåndsvisning, og
+bokføring bare med `bokfor_bilag`. Les metode.md før steg 4.
 
 **Første gang** en bedrift flytter, anbefal å gjøre det sammen med
 regnskapsføreren eller Roret (support@roret.no). Det er en engangsjobb der
@@ -122,22 +124,30 @@ og si at kontrollen av fila må gjøres av Roret.
 Følg [metode.md](metode.md). Stoppunktene:
 
 4. **Kontoplanen.** Kildekonto → konto i Roret (finnes, eller ny med foreslått
-   type). ⛔ Brukeren godkjenner tabellen.
+   type). ⛔ Brukeren godkjenner tabellen og oppretter de nye kontoene i Odoo
+   inntil videre. Du leser dem tilbake.
 5. **MVA-kodene.** Kildens kode → standardkode → avgift i Roret. ⛔ Godkjenning,
    særlig for koder uten standardkode og delvis fradrag.
-6. **Bankkontoer og bankjournaler.** ⛔ Godkjenning.
+6. **Bankkontoer og bankjournaler.** ⛔ Godkjenning. Brukeren oppretter
+   bankjournalene som mangler, i Odoo. Du leser dem tilbake.
 7. **Kunder og leverandører.** Antall nye, dubletter (sjekk org.nr), og avvik
-   mot Enhetsregisteret (`kundesjekk`). ⛔ Godkjenning.
-8. **Leverandørenes bankkontoer.** ⛔ Uttrykkelig ja til at de kan brukes til
-   betaling.
-9. **Migreringsjournaler og overgangskonto.** ⛔ Godkjenning.
+   mot Enhetsregisteret (`kundesjekk`). ⛔ Godkjenning. Firmaer og kontakter
+   med org.nr eller MVA-nummer blir i tillegg forslag som godkjennes i
+   Roret-appen eller i Odoo, i bolker på høyst 50.
+8. **Leverandørenes bankkontoer.** Brukeren legger dem inn i Odoo inntil
+   videre. ⛔ Uttrykkelig ja til at de kan brukes til betaling.
+9. **Migreringsjournaler og overgangskonto.** ⛔ Godkjenning. Brukeren
+   oppretter journalene i Odoo. Du kontrollerer dem.
 10. **Åpningsbalansen** som ett bilag, med kilde per linje og differansen mot
-    udisponert resultat. ⛔ Godkjenning før bokføring.
+    udisponert resultat. ⛔ Godkjenning av tabellen. Brukeren fører utkastet
+    i Odoo, du kontrollerer det og bokfører med `bokfor_bilag` (et forslag).
 11. **Åpne fakturaer** med original KID og forfall, uten MVA. Summen per
-    partner skal stemme med SAF-T. ⛔ Godkjenning av lista før bokføring.
+    partner skal stemme med SAF-T. ⛔ Godkjenning av lista. Brukeren
+    importerer den i Odoo, du kontrollerer utkastene før bokføring.
 12. **Avstemmingsrapporten** (kontrollene i metode.md). ⛔ Alle grønne, ellers
     forklar og rett. Brukeren, og helst regnskapsføreren, godkjenner.
-13. **Lås perioden** før byttedatoen. ⛔ Godkjenning.
+13. **Lås perioden** før byttedatoen. ⛔ Godkjenning. Brukeren setter
+    låsedatoene i Odoo, du leser dem tilbake.
 
 ## Steg 14: Arkiver historikken
 
