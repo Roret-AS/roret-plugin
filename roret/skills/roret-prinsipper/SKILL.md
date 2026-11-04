@@ -123,11 +123,18 @@ mangler. Fullfør det du kan.
 
 ## 6. De rå Odoo-verktøyene
 
-`odoo_search_read`, `odoo_formatted_read_group` og `odoo_fields_get` er greie
-til å lese det et eget verktøy ikke dekker. Saldo per konto gir
-`saldo_per_konto`. `odoo_formatted_read_group` summerer per gruppe i Odoo, så
-bruk den til andre kontrollsummer i stedet for å summere sider fra
-`odoo_search_read`. `odoo_create`, `odoo_write`,
+`odoo_search_read`, `odoo_formatted_read_group`, `odoo_fields_get` og
+`odoo_call_read` er greie til å lese det et eget verktøy ikke dekker. Saldo
+per konto gir `saldo_per_konto`. `odoo_formatted_read_group` summerer per
+gruppe i Odoo, så bruk den til andre kontrollsummer i stedet for å summere
+sider fra `odoo_search_read`. `odoo_call_read` kjører en fast liste med
+lesemetoder: `search_count` (antall), `name_search` (oppslag på navn), `read`,
+`search` og `get_metadata` (hvem som opprettet og endret en post, og
+xml-id-en). Leseverktøyene tar `context` med nøklene `lang`, `tz`,
+`active_test` og `bin_size`, for eksempel `{"lang": "nb_NO"}` for oversatte
+felt på norsk og `{"active_test": false}` for også arkiverte poster. Andre
+nøkler avvises. `odoo_call_read` tar den i `kwargs`. Selskapet velges med
+`company_id`, aldri i `context`. `odoo_create`, `odoo_write`,
 `odoo_unlink` og `odoo_call_button` kan skrive hva som helst brukeren har lov
 til, og brukes til skriving bare når en skill sier det uttrykkelig (for
 eksempel `flytt-til-roret`), og alltid med forhåndsvisning. Bruk den aldri
