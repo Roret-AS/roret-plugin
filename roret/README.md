@@ -91,6 +91,7 @@ oppfylt, og innlegg godkjennes av den markedsansvarlige før de publiseres.
 | `kampanje` | Planlegger en kampanje med mål, budsjett og sporingslenker, og skriver lærdommen etterpå |
 | `nyhetsbrev` | Skriver nyhetsbrevet og viser hvem som kan få det, og hvorfor ikke resten |
 | `innlegg` | Utkast til innlegg på LinkedIn, Facebook og Instagram i innholdskalenderen |
+| `nettside` | Bygger og endrer nettsiden: sider, skjemaer, kalkulatorer, bilder, menyer og SEO. Nytt skript godkjennes av et menneske |
 | `markedsrapport` | Leads, salg og kostnad per kilde og kampanje, kostnad per lead og tre forslag |
 
 ### Styring
