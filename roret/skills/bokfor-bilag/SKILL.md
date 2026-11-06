@@ -92,6 +92,10 @@ mot dokumentet:
   Kjøp av tjenester fra utlandet skal ha snudd avregning, ikke vanlig
   inngående MVA. En linje uten MVA-kode kan være riktig (for eksempel
   representasjon), men spør.
+- Driftsmidler (datautstyr, maskiner, inventar, kjøretøy): om kjøpet skal
+  aktiveres eller kostnadsføres direkte, avgjøres av en terskel i
+  skatteloven som endres. Slå opp grensen med `lov_oppslag` før du velger
+  konto, også når du mener å vite den, og oppgi paragrafen.
 - KID eller betalingsreferanse er med, ellers blir betalingen vanskelig.
 - Fakturaen er ikke registrert fra før. Står det noe i `mulige_dubletter`,
   vis det og spør før du bokfører.
@@ -147,6 +151,7 @@ med `hent_dokumentmapper(company_id=<id>)` og spør hvis det er uklart.
 - Bokfør aldri uten at brukeren har sett leverandør, beløp, konto og MVA.
 - Utlegg over et beløp brukeren synes er stort: spør en ekstra gang.
 - Et bokført bilag rettes med kreditnota, aldri sletting (`roret-prinsipper` §4).
-- Spørsmål om dokumentasjonskrav, oppbevaringstid eller fradragsrett for
-  MVA: slå opp med `lov_oppslag` og oppgi paragrafen. Gjelder bilaget en
+- Kontovalg som avhenger av en regel, og spørsmål om dokumentasjonskrav,
+  oppbevaringstid eller fradragsrett for MVA: slå opp med `lov_oppslag` og
+  oppgi paragrafen, også når du mener å vite svaret. Gjelder bilaget en
   tidligere periode, bruk `lov_gjaldt`.

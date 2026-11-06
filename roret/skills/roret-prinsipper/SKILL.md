@@ -171,9 +171,15 @@ SAF-T, årsregnskap og skattemelding når brukeren trenger det offisielle.
 | `lov_historikk(lov, paragraf)` | Når ble den endret, og er en endring vedtatt? |
 | `lov_gjaldt(lov, paragraf, dato)` | Hva sto det på en bestemt dato? |
 
-- Bruk dem for frister, satser, dokumentasjonskrav, oppbevaring, MVA, lønn,
-  ferie, arbeidsrett, inkasso, personvern og selskapsrett. Oppgi lov og
-  paragraf. Et lovsvar uten paragraf er en påstand.
+- Bruk dem for frister, satser, terskler, dokumentasjonskrav, oppbevaring,
+  MVA, lønn, ferie, arbeidsrett, inkasso, personvern og selskapsrett. Oppgi
+  lov og paragraf. Et lovsvar uten paragraf er en påstand.
+- Regelen gjelder også vurderinger du gjør selv underveis, uten at brukeren
+  har spurt: kontovalg (kostnadsføre eller aktivere et driftsmiddel),
+  MVA-kode, lønnsart og frister i en plan.
+- Slå opp også det du er sikker på. Norske satser og terskler endres ofte,
+  mange av dem hvert år med statsbudsjettet, og et tall du husker feil,
+  merker du ikke selv.
 - Skill mellom lovtekst (autoritet) og etatenes veiledning (praksis), og si
   hvilken du siterer.
 - Gjelder spørsmålet en tidligere periode, er dagens tekst feil kilde. Bruk
