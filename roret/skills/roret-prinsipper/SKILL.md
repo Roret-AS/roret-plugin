@@ -134,7 +134,15 @@ xml-id-en). Leseverktøyene tar `context` med nøklene `lang`, `tz`,
 `active_test` og `bin_size`, for eksempel `{"lang": "nb_NO"}` for oversatte
 felt på norsk og `{"active_test": false}` for også arkiverte poster. Andre
 nøkler avvises. `odoo_call_read` tar den i `kwargs`. Selskapet velges med
-`company_id`, aldri i `context`. `odoo_create`, `odoo_write`,
+`company_id`, aldri i `context`. `default_get` og `onchange` (standardverdiene
+for en ny post) er ikke med der, fordi en standardverdi kan lage en post eller
+bruke et nummer. De kjøres med `odoo_call_button`, som spør først:
+`default_get` med feltnavnene i `args` og uten `ids`, og `onchange` med
+`ids` (`[]` for en ny post). De går bare på kontakter, CRM, prosjekt,
+aktiviteter, kalender og kundeservice, for en ny post, og med `context`
+begrenset til `lang`, `tz` og `active_test`. Ellers stoppes kallet, og på
+låste modeller som `res.company` og `account.move` kjøres de aldri.
+`odoo_create`, `odoo_write`,
 `odoo_unlink` og `odoo_call_button` kan skrive hva som helst brukeren har lov
 til, og brukes til skriving bare når en skill sier det uttrykkelig (for
 eksempel `flytt-til-roret`), og alltid med forhåndsvisning. Bruk den aldri
