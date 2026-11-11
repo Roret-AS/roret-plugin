@@ -146,9 +146,8 @@ din eller med Roret.
 ## Slik fungerer det
 
 - Pluginen inneholder arbeidsflyter (skills) og koblingen til Rorets server
-  `https://mcp.roret.no/mcp`. Ingenting installeres lokalt. (Unntaket er
-  kontrollen av SAF-T-fila ved flytting, som kjører et lite skript i Claudes
-  kodekjøring.)
+  `https://mcp.roret.no/mcp`. Ingenting installeres eller kjøres lokalt. Ved
+  flytting leses SAF-T-fila i Roret, ikke i samtalen.
 - Du logger inn som deg selv. Når du kobler til, lager din egen Odoo en
   nøkkel og sender den direkte til Rorets server. Der lagres den kryptert og
   brukes bare til kallene du gjør. Du limer den aldri inn, og Claude ser den

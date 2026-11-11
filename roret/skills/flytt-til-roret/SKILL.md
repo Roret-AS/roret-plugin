@@ -79,45 +79,94 @@ Dette må du ha før du går videre:
   byttedatoen, som Excel eller CSV: fakturanummer, KID, fakturadato, forfall,
   restbeløp og valuta. SAF-T kan ikke erstatte denne lista.
 - **Saldobalanse** per samme dato (PDF eller Excel).
+- **Ved bytte midt i året:** bevegelsen per konto for hver måned i år fram
+  til byttet, som Excel. Det kan være én saldobalanse per måned, eller en
+  resultatrapport med én kolonne per måned. Den blir månedsbilagene i
+  åpningsbalansen ([metode.md](metode.md), steg 10).
 - **Kunde- og leverandørlisten** som Excel, med e-post, telefon og
   leverandørenes bankkonto.
 - **Bilag med vedlegg** og EHF-filene, til arkivet.
 
-## Steg 3: Kontroller SAF-T-fila
+## Steg 3: Kontroller SAF-T-fila i Roret
 
-SAF-T-fila er for stor til å limes inn i samtalen. Kontroller den med
-skriptet som følger skillen, i kodekjøringen (Claude-appen med fila lastet
-opp, eller Claude Code). Skriptet ligger i skillens egen mappe:
-`<skillmappa>/scripts/saft_les.py`. Pakk ut ZIP-fila først. Skriptet trenger
-lxml. Installer den i et eget miljø, så den ikke blandes med noe annet:
+SAF-T-fila er for stor til å limes inn i samtalen, så Roret leser den.
+Brukeren gjør det i **Flytt regnskapsåret**. Der leses fila på serveren, den
+arkiveres i dokumentarkivet med sjekksum, og den kontrolleres i en
+prøvekjøring. Prøvekjøringen skriver ingenting i regnskapet.
+
+1. Brukeren åpner Regnskap → Bokføring → Flytt regnskapsåret, lager en ny
+   kjøring, laster opp SAF-T-fila slik det gamle systemet lagde den (XML
+   eller ZIP) og trykker «Les fila».
+2. Under «Valg» settes «Ta med bilag til og med» til dagen før byttedatoen,
+   og «MVA-meldingen er levert fra det gamle systemet til og med» til siste
+   termin som er levert derfra. Så trykker brukeren «Start prøvekjøringen».
+3. **Aldri «Importer nå» i denne flyttingen.** Den knappen fører hvert bilag
+   i fila inn i Roret, og sammen med åpningsbalansen blir da alt ført to
+   ganger. Å importere hele regnskapsåret er en annen vei, som Roret hjelper
+   med.
+4. La kjøringen stå til avstemmingen i steg 12 er godkjent. Steg 4–12 leser
+   grunnlaget fra den. Roret sletter grunnlaget i en kjøring ingen har endret
+   på 30 dager, og setter den til «Forkastet». At du leser den, teller ikke
+   som en endring. Sjekk `tilstand` hver gang du leser grunnlaget. Er den
+   `forkastet`, må fila leses i en ny kjøring.
+
+Finnes ikke menyvalget, er funksjonen ikke slått på. Roret-kunder ber Roret
+om det (support@roret.no). Brukeren trenger rollen Regnskap.
+
+Når statusen er «Prøvekjøringen er klar», leser du kjøringen og avvikene.
+`<K>` er kjøringens id:
 
 ```
-python3 -m venv .saft-venv
-.saft-venv/bin/pip install lxml
-.saft-venv/bin/python -I <skillmappa>/scripts/saft_les.py <fil.xml> --json grunnlag.json
+odoo_search_read("roret.migrering.kjoring", [["kilde", "=", "saft"], ["company_id", "=", <C>]], ["id", "tilstand", "saft_versjon", "saft_orgnr", "saft_selskap", "saft_kildesystem", "saft_fra", "saft_til", "saft_antall_bilag", "saft_dokument_id", "tellinger_prove"], order="id desc", limit=1, company_id=<C>)
+odoo_search_read("roret.migrering.avvik", [["kjoring_id", "=", <K>]], ["alvor", "type", "ekstern_id", "melding"], limit=200, company_id=<C>)
 ```
 
-Har kodekjøringen lxml fra før, holder det med
-`python3 -I <skillmappa>/scripts/saft_les.py <fil.xml> --json grunnlag.json`.
+`tellinger_prove` har lista `kontroller`, der hver kontroll har `navn`, `ok`
+og `tekst`. Kontrollene sjekker at hvert bilag går i null, at antall bilag og
+sum debet stemmer med fila, og at inngående saldo pluss bilagene er lik
+utgående saldo per konto og per kunde og leverandør. De sjekker også at
+saldobalansen går i null og at reskontroen stemmer med hovedboken.
 
-Skriptet skriver ingenting i Roret. Det viser versjon, selskap, periode,
-antall kontoer, kunder, leverandører og bilag, og kontrollerer at bilagene
-går i null, at totalene stemmer, at inngående saldo pluss bevegelse er lik
-utgående per konto og per partner, og at reskontroen stemmer med hovedboken.
-`grunnlag.json` har kontoene, partnerne, MVA-kodene og månedssummene som
-neste steg trenger.
+⛔ Stopp ved avvik: org.nr i fila (`saft_orgnr`) er ikke selskapets, en
+kontroll har `ok` lik false, eller perioden (`saft_fra`–`saft_til`) slutter
+ikke dagen før byttedatoen. Forklar avviket. Be brukeren rette det i det
+gamle systemet, ta ut fila på nytt og lese den i en ny kjøring.
 
-⛔ Stopp ved avvik: annet org.nr enn selskapet, bilag som ikke går i null,
-totaler eller reskontro som ikke stemmer. Forklar avviket og be brukeren
-rette det i det gamle systemet og ta ut fila på nytt.
+Grunnlaget for steg 4–12 ligger i prøvekjøringens mellomlager,
+`roret.migrering.rad` med `kjoring_id` lik `<K>`. Les én `type` om gangen:
 
-Åpne poster som skriptet utleder av transaksjonene, er bare en kontroll.
-Det som var åpent ved periodestart, ligger bare som en sum per partner, og
-fila sier ikke hvilken betaling som lukket hvilken faktura. Bruk
-reskontrolisten fra steg 2.
+| `type` | `ekstern_id` | I `data` |
+|---|---|---|
+| `konto` | Kontonummeret | `navn`, `ib` og `ub` (inngående og utgående saldo), `standardkonto`, `gruppekode` |
+| `kunde`, `leverandor` | Id-en i det gamle systemet | `navn`, `orgnr`, `mva_nr`, adressen, `epost`, `telefon`, og `saldo` per reskontrokonto med `ib` og `ub` |
+| `mva` | MVA-koden i det gamle systemet | `standardkode`, `sats`, `navn` |
 
-Har ikke Claude kodekjøring, be om saldobalansen og Excel-listene i stedet,
-og si at kontrollen av fila må gjøres av Roret.
+```
+odoo_search_read("roret.migrering.rad", [["kjoring_id", "=", <K>], ["type", "=", "konto"]], ["ekstern_id", "data", "handling", "maal_id", "melding"], limit=1000, company_id=<C>)
+```
+
+`ib` og `ub` er beløp skrevet som tekst. Har en konto `ub` lik `null`, står
+den i bilagene, men ikke i kontoplanen i fila, og avvikene sier det samme.
+Den er ikke uten saldo. Hent den utgående saldoen fra saldobalansen i steg 2,
+og ta kontoen med i kontrollene.
+
+`handling` og `maal_id` viser hva prøvekjøringen fant i Roret:
+
+- `finnes` eller `kobles`, med id-en i Roret.
+- `ny` når det ikke finnes. For en konto står den foreslåtte kontotypen da i
+  `melding`.
+- `feil`: kontoen er arkivert i Roret, eller ingen avgift har MVA-kodens
+  standardkode.
+
+Bruk dette som utgangspunkt, og kontroller tabellene i steg 4, 5 og 7 selv.
+
+Åpne poster per faktura står ikke i fila. Det som var åpent ved
+periodestart, ligger bare som en sum per partner, og fila sier ikke hvilken
+betaling som lukket hvilken faktura. Bruk reskontrolisten fra steg 2.
+
+Kan ikke bedriften bruke Flytt regnskapsåret, be om saldobalansen og
+Excel-listene i stedet. Si at SAF-T-fila ikke er kontrollert, og at Roret kan
+kontrollere den (support@roret.no).
 
 ## Steg 4–13: Overføringen
 
@@ -152,7 +201,8 @@ Følg [metode.md](metode.md). Stoppunktene:
 ## Steg 14: Arkiver historikken
 
 Store filer lastes opp av brukeren i Rorets dokumentarkiv i nettleseren, ikke
-gjennom samtalen. Foreslå mappen «Regnskap og skatt / Historikk <system> /
+gjennom samtalen. SAF-T-fila fra steg 3 ligger alt i arkivet
+(`saft_dokument_id` på kjøringen) og skal ikke lastes opp på nytt. Foreslå mappen «Regnskap og skatt / Historikk <system> /
 <år>» med begrenset tilgang, fordi SAF-T inneholder personopplysninger. Finn
 filene med `hent_dokumenter` og legg dem riktig med `flytt_dokument`.
 `last_opp_dokument` passer bare for små filer, som avstemmingsrapporten.
