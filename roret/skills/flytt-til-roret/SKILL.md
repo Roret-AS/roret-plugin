@@ -1,6 +1,6 @@
 ---
 name: flytt-til-roret
-description: Flytter regnskapet fra Tripletex, Fiken, PowerOffice Go eller Uni Micro (også DNB Regnskap, SpareBank 1 Regnskap og Eika Regnskap) til Roret — velger byttedato, forteller nøyaktig hva som skal lastes ned og hvor, kontrollerer SAF-T-fila, overfører kontoplan, kunder, leverandører, åpningsbalanse og åpne fakturaer, avstemmer på øre, arkiverer historikken og går gjennom alt som må gjøres før det gamle systemet sies opp. Bruk denne når brukeren vil bytte til Roret, flytte regnskapet, importere fra et annet regnskapsprogram, har en SAF-T-fil, eller nevner noen av disse systemene.
+description: Flytter regnskapet fra Tripletex, Fiken, PowerOffice Go eller Uni Micro (også DNB Regnskap, SpareBank 1 Regnskap og Eika Regnskap) til Roret — velger byttedato, forteller nøyaktig hva som skal lastes ned og hvor, kontrollerer SAF-T-fila, overfører kontoplan, kunder, leverandører, åpningsbalanse og åpne fakturaer, avstemmer på øre, arkiverer historikken og går gjennom alt som må gjøres før det gamle systemet sies opp. Veileder også flyttingen av kunder, salg, saker og abonnementer fra HubSpot. Bruk denne når brukeren vil bytte til Roret, flytte regnskapet, importere fra et annet regnskapsprogram, har en SAF-T-fil, vil flytte fra HubSpot, eller nevner noen av disse systemene.
 ---
 
 # Flytte til Roret
@@ -29,6 +29,10 @@ bokføring bare med `bokfor_bilag`. Les metode.md før steg 4.
 **Første gang** en bedrift flytter, anbefal å gjøre det sammen med
 regnskapsføreren eller Roret (support@roret.no). Det er en engangsjobb der
 feil merkes med en gang, men de er tunge å rette etterpå.
+
+**Bare HubSpot?** Skal brukeren flytte kundene, salget, sakene eller
+abonnementene fra HubSpot, og ikke regnskapet, følg
+[kilder/hubspot.md](kilder/hubspot.md) og hopp over stegene under.
 
 ## Steg 1: Rammen
 
@@ -69,6 +73,9 @@ Les kildeveiledningen og gå gjennom eksportpakken med brukeren:
 [PowerOffice Go](kilder/poweroffice.md) · [Uni Micro](kilder/unimicro.md).
 Menystiene er hentet fra leverandørenes hjelpesider og kan ha endret seg.
 Spør hva brukeren ser hvis et punkt ikke finnes.
+
+Kommer kundene, salget, sakene eller abonnementene fra HubSpot, er det en egen
+flytting i Roret, ved siden av regnskapet: se [kilder/hubspot.md](kilder/hubspot.md).
 
 Dette må du ha før du går videre:
 
