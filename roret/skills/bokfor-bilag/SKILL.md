@@ -58,6 +58,18 @@ Factur-X, lager fakturalinjene og henger fila på bilaget:
 motta_bilag(filer=[{"name": "<filnavn med endelse>", "content_base64": "<base64>"}], bilagstype="in_invoice", company_id=<id>)
 ```
 
+Ligger fila alt i Odoo som vedlegg på en annen post, for eksempel en
+faktura som kom inn på chatteren til en kontakt (`hent_chatter_vedlegg`),
+bruk vedleggets id i stedet for å lese fila ned og sende den opp igjen:
+
+```
+motta_bilag(vedlegg_ids=[<ir.attachment-id>], bilagstype="in_invoice", company_id=<id>)
+```
+
+Bilaget får en kopi, og originalen blir hengende der den var. Svaret viser
+hva som ble kopiert fra hva (`kopiert_fra`). Bruk enten `filer` eller
+`vedlegg_ids` i ett kall, ikke begge.
+
 Én fil gir ett utkast. Har du både PDF og XML for samme faktura, send bare
 én av dem. Har brukeren mange filer, ta dem i porsjoner på fem til ti, og vis
 utkastene for hver porsjon før du går videre.
