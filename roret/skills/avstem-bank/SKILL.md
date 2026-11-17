@@ -61,8 +61,19 @@ avstem_banklinje_mot_faktura(bank_line_id=<id>, invoice_id=<id>, company_id=<id>
 avstem_banklinje_mot_fakturaer(bank_line_id=<id>, invoice_ids=[<id>, <id>], company_id=<id>)
 ```
 
-**`existing_payment`:** det finnes allerede en registrert betaling som venter.
-Forklar det, og vis brukeren hvor den lukkes i avstemmingsbildet i Odoo.
+**`existing_payment`:** det finnes allerede en registrert betaling som venter
+på banklinja si. Er den et utkast, må den bekreftes i Odoo først. Ellers: finn
+linja der den venter, vis betalingen, og avstem etter ja:
+
+```
+odoo_search_read("account.payment", [["id","=",<id>]], ["name","amount","partner_id","outstanding_account_id"])
+odoo_search_read("account.move.line", [["payment_id","=",<id>],["account_id","=",<outstanding_account_id>],["reconciled","=",False]], ["id","name","amount_residual"])
+avstem_banklinje_mot_hovedbokslinje(bank_line_id=<id>, counterpart_line_id=<linja>, company_id=<id>)
+```
+
+Peker banklinja på betalingen (samme beløp, og partneren eller referansen står
+på banklinja), er det et eksakt treff, og med kundens regel «Uten godkjenning
+ved eksakt treff» gjør Roret det selv.
 
 **`needs_review`:** ingen sikker match. Vis `recommendation`, delvise treff
 og partnerkandidater, og la brukeren velge:
@@ -115,8 +126,8 @@ verktøy) kan gi snudd avregning fordi de kjøpes fra utlandet. Slå opp med
 
 ## Steg 4: Etter avstemming
 
-Bekreft at linja er avstemt og fakturaen betalt, og spør om dere tar neste
-linje. Etter tre avstemminger: oppsummer det som er gjort før dere går videre
+Si hva svaret ble: avstemt, gjort av Roret selv (eksakt treff), eller et
+forslag som venter på godkjenning i Roret. Spør så om dere tar neste linje. Etter tre avstemminger: oppsummer det som er gjort før dere går videre
 (`roret-prinsipper` §2).
 
 ## Viktig
