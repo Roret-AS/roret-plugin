@@ -12,6 +12,12 @@ være borte.
 ## Før eksporten
 
 - Kunden må ha administratorrettighet i Tripletex.
+- **Brukeren som tar ut SAF-T-fila, må ha tilgang til kunder og
+  leverandører,** ikke bare til regnskapet. Uten den tilgangen lager
+  Tripletex fila uten kunde- og leverandørregisteret, og sier ikke fra. Fila
+  ser ellers riktig ut, og kontrollene av den er grønne. Er du usikker, ta
+  den ut som en bruker med full tilgang. Steg 3 i skillen viser om
+  registrene er med.
 - **Oppsigelsestiden er 3 måneder.** Kunden kan eksportere i oppsigelsestiden,
   men må ikke vente til siste dag.
 - Tripletex anbefaler å gjøre ferdig årsoppgjøret for siste år i Tripletex før
@@ -25,7 +31,8 @@ være borte.
    én SAF-T-fil per år (versjon 1.3, og 1.4 der det tilbys). For inneværende
    år fram til byttedatoen: Regnskap → Kontoplan → «Regnskapseksport (SAF-T)»,
    der datoene og versjonen velges. Filene kommer som ZIP. Ta alle år innenfor
-   oppbevaringstiden.
+   oppbevaringstiden. Ta dem ut med brukeren med tilgang til kunder og
+   leverandører (over).
 2. **Saldobalanse per byttedato** som Excel (Regnskap → Saldobalanse eller
    rapporten med samme navn).
 3. **Åpne poster per byttedato:** Regnskap → Reskontro → Kunder, og →

@@ -139,6 +139,29 @@ kontroll har `ok` lik false, eller perioden (`saft_fra`–`saft_til`) slutter
 ikke dagen før byttedatoen. Forklar avviket. Be brukeren rette det i det
 gamle systemet, ta ut fila på nytt og lese den i en ny kjøring.
 
+⛔ Stopp også når fila mangler kunde- og leverandørregisteret. Kontrollene er
+grønne for en slik fil. Prøvekjøringen lager da én rad og ett avvik («Står i
+bilagene, men ikke i kunde- eller leverandørregisteret i fila») per kunde og
+leverandør i bilagene. Tell begge, så ingen grense på antall rader kapper
+svaret:
+
+```
+odoo_formatted_read_group("roret.migrering.avvik", [["kjoring_id", "=", <K>], ["type", "in", ["kunde", "leverandor"]], ["melding", "ilike", "Står i bilagene"]], groupby=["type"], aggregates=["__count"], company_id=<C>)
+odoo_formatted_read_group("roret.migrering.rad", [["kjoring_id", "=", <K>], ["type", "in", ["kunde", "leverandor"]]], groupby=["type"], aggregates=["__count"], company_id=<C>)
+```
+
+Er tallene like og større enn null for hver type som har rader, er
+registrene ikke med i fila. En type uten rader har ingen partnere i
+bilagene, og teller ikke. Har bilagene verken kunder eller leverandører (et
+holdingselskap med bare bank og lønn), er det ingenting å stoppe for.
+Mangler bare noen, står de i avvikene, og resten av registeret er med.
+
+Mangler registrene, be brukeren ta ut fila på nytt med en bruker som har
+tilgang til kunder og leverandører i det gamle systemet, og lese den i en ny
+kjøring. I Tripletex mangler de når brukeren som tok ut fila, ikke har den
+tilgangen, og Tripletex sier ikke fra. Uten registrene har grunnlaget i
+steg 4–12 ingen navn, org.nr. eller adresse for kundene og leverandørene.
+
 Grunnlaget for steg 4–12 ligger i prøvekjøringens mellomlager,
 `roret.migrering.rad` med `kjoring_id` lik `<K>`. Les én `type` om gangen:
 
