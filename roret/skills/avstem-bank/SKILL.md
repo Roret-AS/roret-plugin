@@ -90,6 +90,18 @@ avstem_banklinje_mot_hovedbokslinje(bank_line_id=<id>, counterpart_line_id=<id>,
 avstem_banklinje_mot_hovedbokslinjer(bank_line_id=<id>, counterpart_line_ids=[<id>, <id>], company_id=<id>)
 ```
 
+**Overføring mellom egne kontoer** (også veksling mellom kronekontoen og en
+valutakonto): banklinja får ofte selskapet selv som partner, og
+bankavstemmingen i Odoo foreslår da kundefordringer eller leverandørgjeld
+som motkonto. Det er feil. Brukeren avstemmer begge sidene i Odoo med
+knappen «Interne overføringer». Er de to sidene i hver sin valuta, står
+kursforskjellen igjen på overføringskontoen og føres som agio eller disagio.
+
+**For lite betalt i valuta** (utenlandske banker trekker ofte gebyr av
+beløpet): avstem banklinja mot fakturaen i Odoo. Resten står åpen på
+fakturaen til brukeren har ført gebyret. Avskrivning i valuta kan du ikke
+foreslå.
+
 ## Stripe-flyten
 
 Stripe slår sammen mange betalinger i én netto utbetaling og trekker gebyret

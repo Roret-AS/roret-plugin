@@ -64,7 +64,11 @@ Kjør disse for terminens datoer (`date_from`, `date_to`):
    Ubehandlede leverandørfakturaer i terminen gir for lite inngående MVA.
 4. **MVA per kode.** `mva_sammendrag(date_from="<date_from>", date_to="<date_to>", company_id=<id>)`,
    og samme for forrige termin. Se etter koder som er tomme nå, men ikke før,
-   og store hopp.
+   og store hopp. `base` er grunnlaget per kode: salg til utlandet (kode 52)
+   står bare med grunnlaget. Er `sales_without_tax_code` over null, har
+   terminen salgsfakturalinjer uten MVA-kode. Finn dem og få koden satt før
+   meldingen lages:
+   `odoo_search_read("account.move.line", [["tax_ids","=",false],["display_type","=","product"],["move_id.move_type","in",["out_invoice","out_refund"]],["parent_state","=","posted"],["date",">=","<date_from>"],["date","<=","<date_to>"],["company_id","=",<id>]], ["move_id","name","account_id","balance"])`.
 5. **Snudd avregning.** Kjøp av tjenester fra utlandet (programvare,
    annonser, skytjenester) skal ha snudd avregning: beregnet utgående MVA og
    fradrag i samme melding. Finn leverandørfakturaer i terminen fra

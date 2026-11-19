@@ -72,6 +72,21 @@ standardkode (`NA`), koder med delvis fradrag og flere kildekoder med samme
 standardkode. Mappingen brukes til kontroll og til å sette riktig standard-MVA
 på nye kontoer. Åpningsbalansen og de åpne fakturaene skal **ikke** ha MVA.
 
+## Valuta: før steg 6
+
+Har selskapet bankkontoer, kunder eller leverandører i valuta, må hver valuta
+være aktiv i Roret med kurser før noe føres:
+
+```
+odoo_search_read("res.currency", [["active", "in", [true, false]], ["name", "in", ["EUR", "USD"]]], ["name", "active"])
+```
+
+En valuta som ikke er aktiv, kan ikke brukeren slå på selv: Roret-kunder ber
+Roret, og i Roret for Odoo gjør administratoren det. Kursene henter Roret fra
+Norges Bank fra 1. januar året før. En åpen post som er eldre, eller som ble
+ført til en annen kurs i det gamle systemet, får kursen satt på fakturaen
+(steg 11).
+
 ## Steg 6: Bankkontoer og bankjournaler
 
 ```
@@ -85,6 +100,15 @@ kallet over, og noter kontoen hver fikk (`default_account_id`).
 
 Saldoen fra kildens bankkonto skal føres på journalens konto
 (`default_account_id`) i åpningsbalansen.
+
+**En bankkonto i valuta** får sin egen bankjournal i kontoens valuta (feltet
+Valuta på journalen), og kontoen får samme faste valuta. Sett valutaen på
+kronekontoens journal også, ellers kan fakturaer i valuta få feil
+kontonummer. SAF-T-fila har bare saldoen i kroner. Saldoen i valuta per
+`<D-1>` står på kontoutskriften fra banken: be om den, og noter begge beløpene.
+Har kildens bankkonto et nummer som er en systemkonto i Roret (for eksempel
+kontoen for bank i påvente), sier prøvekjøringen fra, og systemkontoen må få
+et annet nummer før kontoen kan lages.
 
 ## Steg 7: Kunder og leverandører
 
@@ -174,8 +198,13 @@ Ved terminstart midt i året går resultatkontoene med:
 3. Når alle månedsbilagene og de åpne fakturaene er inne, står 1599 i null
    (K5).
 
-Lag bilaget som tabell (konto, tekst, debet, kredit, kilde i SAF-T) med
-summene, og få ja. Brukeren fører det i Odoo som et bilag i journalen for
+En bankkonto med fast valuta tar bare linjer i sin valuta. Linja for den får
+kronebeløpet fra SAF-T som debet eller kredit, og i tillegg valutaen og
+beløpet i valuta fra kontoutskriften (steg 6). Uten beløpet i valuta starter
+kontoen på null i valuta, og bankavstemmingen og kursdifferansene blir feil.
+
+Lag bilaget som tabell (konto, tekst, debet, kredit, beløp i valuta, kilde i
+SAF-T) med summene, og få ja. Brukeren fører det i Odoo som et bilag i journalen for
 diverse (Regnskap → Regnskap → Bilag, dato `<D-1>`, referanse
 «Åpningsbalanse fra <system>, SAF-T <år>»), og lar det stå som utkast. Les
 utkastet tilbake og sammenlign med tabellen linje for linje:
@@ -202,15 +231,27 @@ importerer den i Odoo (Regnskap → Kunder → Fakturaer, og Leverandører →
 Fakturaer, Importer) som utkast. Én rad per åpen post: partner, journal MIGK
 (kunder) eller MIGL (leverandører), type (faktura eller kreditnota),
 originalt fakturanummer (`ref`), fakturadato, forfall (`invoice_date_due`),
-regnskapsdato `<D-1>`, original KID (`payment_reference`), og én linje med
-teksten «Åpen post fra <system>, faktura <nr>», konto 1599, restbeløpet og
-ingen MVA. For leverandørfakturaer også leverandørens bankkonto når den er
-kjent.
+regnskapsdato `<D-1>`, original KID (`payment_reference`), valuta
+(`currency_id`), og én linje med teksten «Åpen post fra <system>, faktura
+<nr>», konto 1599, restbeløpet i fakturaens valuta og ingen MVA. For
+leverandørfakturaer også leverandørens bankkonto når den er kjent.
+
+For en post i valuta tar du også med kursen (`invoice_currency_rate`), regnet
+som restbeløpet i valuta delt på restbeløpet i kroner fra reskontrolisten,
+med minst åtte desimaler: 1 850,00 USD som står med 19 610,00 kr, gir
+0,09433962. Uten den regner Roret kronene med sin egen kurs for fakturadatoen,
+og da stemmer ikke posten med kildens reskontro. Har fakturaen ingen KID, som
+de fleste til kunder i utlandet, settes `payment_reference` til det
+opprinnelige fakturanummeret, så en innbetaling merket med det finner
+fakturaen.
 
 Hvorfor feltene betyr noe:
 
 - **`payment_reference` settes før bokføring.** Ellers lager Roret en ny KID,
   og kundens innbetaling med gammel KID finner ikke fakturaen.
+- **Kursen på poster i valuta:** kronebeløpet skal være kildens, ikke regnet
+  på nytt. Kontroller `amount_total_signed` mot kronene i reskontrolisten for
+  hvert utkast i valuta før bokføring.
 - **Ingen produkt, tom `tax_ids` og `is_imported`:** ellers kan det komme MVA
   på linja, og den blir rapportert på nytt i Rorets MVA-melding.
 - **Linja står på 1599,** fordi en fakturalinje ikke kan stå på 1500 eller
@@ -221,11 +262,12 @@ Hvorfor feltene betyr noe:
 Kontroller utkastene før bokføring:
 
 ```
-odoo_search_read("account.move", [["journal_id", "in", [<MIGK>, <MIGL>]], ["state", "=", "draft"]], ["name", "partner_id", "amount_total", "amount_tax", "invoice_date_due", "payment_reference"], limit=500)
+odoo_search_read("account.move", [["journal_id", "in", [<MIGK>, <MIGL>]], ["state", "=", "draft"]], ["name", "partner_id", "currency_id", "amount_total", "amount_total_signed", "amount_tax", "invoice_date_due", "payment_reference"], limit=500)
 ```
 
-Alle skal ha `amount_tax` 0, forfall og KID, og antallet og summen per
-partner skal stemme med lista. Bokfør etter ja: få bilag med
+Alle skal ha `amount_tax` 0, forfall og KID eller fakturanummer, og antallet
+og summen per partner skal stemme med lista, i valuta (`amount_total`) og i
+kroner (`amount_total_signed`). Bokfør etter ja: få bilag med
 `bokfor_bilag(move_id=<id>, company_id=<C>)` (hvert blir et forslag), mange
 samlet av brukeren i Odoo (merk utkastene → Bokfør). Les tilstanden tilbake
 med kallet over og `["state", "=", "posted"]`.
@@ -237,10 +279,10 @@ med kallet over og `["state", "=", "posted"]`.
 | K1 | SAF-T-fila er hel | Prøvekjøringen i Flytt regnskapsåret: alle `kontroller` i `tellinger_prove` har `ok` (steg 3 i SKILL.md) |
 | K2 | Alle kontoer med saldo er mappet | Radene med `type` lik `konto` i prøvekjøringen mot kontoene i Roret: de der `ub` er et annet beløp enn 0, og alle der `ub` er `null` (kontoen mangler i kontoplanen i fila) |
 | K3 | Saldobalansen i Roret per `<D-1>` = utgående saldo i SAF-T per konto, også 1500 og 2400 når de åpne fakturaene er inne | `odoo_formatted_read_group("account.move.line", [["parent_state", "=", "posted"], ["date", "<=", "<D-1>"], ["company_id", "=", <C>]], groupby=["account_id"], aggregates=["balance:sum"], company_id=<C>)` |
-| K4 | Åpne poster per partner = SAF-T per kunde og leverandør, totalen = 1500 og 2400 | `odoo_formatted_read_group("account.move.line", [["parent_state", "=", "posted"], ["journal_id", "in", [<MIGK>, <MIGL>]], ["reconciled", "=", false], ["company_id", "=", <C>]], groupby=["partner_id", "account_id"], aggregates=["amount_residual:sum"], company_id=<C>)`. Bare migreringsjournalene, så oppgjørskontoen for MVA (2740) ikke kommer med |
+| K4 | Åpne poster per partner = SAF-T per kunde og leverandør, totalen = 1500 og 2400. Poster i valuta stemmer også i valuta mot reskontrolisten | `odoo_formatted_read_group("account.move.line", [["parent_state", "=", "posted"], ["journal_id", "in", [<MIGK>, <MIGL>]], ["reconciled", "=", false], ["company_id", "=", <C>]], groupby=["partner_id", "account_id", "currency_id"], aggregates=["amount_residual:sum", "amount_residual_currency:sum"], company_id=<C>)`. Bare migreringsjournalene, så oppgjørskontoen for MVA (2740) ikke kommer med |
 | K5 | Overgangskontoen 1599 = 0 | Som K3 |
 | K6 | Ingen migrert faktura har MVA | `odoo_search_read("account.move", [["journal_id", "in", [<MIGK>, <MIGL>]], ["amount_tax", "!=", 0]], ["name"])` skal gi tom liste |
-| K7 | Banksaldo i Roret = kontoutskriften = SAF-T | `likvidbeholdning(company_id=<C>, as_of_date="<D-1>")` |
+| K7 | Banksaldo i Roret = kontoutskriften = SAF-T. En konto i valuta stemmer i valuta mot kontoutskriften (`balance_in_account_currency`) og i kroner mot SAF-T (`balance`) | `likvidbeholdning(company_id=<C>, as_of_date="<D-1>")` |
 | K8 | Ingen dubletter, alle med åpne poster har adresse eller e-post | `odoo_search_read("res.partner", ...)` |
 | K9 | Ingen utkast før byttedatoen | `hent_utkastfakturaer(company_id=<C>)` |
 | K10 | Arkivet er komplett: SAF-T for hvert år, rapportene og bilagene | `hent_dokumenter`, `finn_dokumenter` |

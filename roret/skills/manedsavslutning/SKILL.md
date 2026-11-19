@@ -23,7 +23,9 @@ Er det linjer igjen, tilby å ta dem med `avstem-bank`-skillen nå.
 
 Sjekk også at banksaldoen i Odoo stemmer med kontoutskriften på siste dag:
 `likvidbeholdning(company_id=<id>, as_of_date="<date_to>")`. Be brukeren
-bekrefte mot nettbanken.
+bekrefte mot nettbanken. `balance` er i selskapets valuta. En bankkonto i
+valuta har saldoen slik banken viser den i `balance_in_account_currency`
+(med `account_currency`): det er den som skal stemme med kontoutskriften.
 
 → «Bank er ferdig / har N linjer igjen. Gå videre til bilag?»
 
@@ -81,8 +83,12 @@ mva_sammendrag(date_from="<date_from>", date_to="<date_to>", company_id=<id>)
 
 Sammenlign med forrige måned og se etter det som skiller seg ut: en MVA-kode
 som plutselig er tom, store beløp uten MVA, kjøp fra utlandet uten snudd
-avregning. Er dette siste måned i en MVA-termin, gå videre med
-`mva-termin`-skillen.
+avregning. `base` er grunnlaget per kode. Salg til utlandet (kode 52, 0 %)
+har ingen avgift og står bare med grunnlaget. Er `sales_without_tax_code`
+over null, finnes det salgsfakturalinjer uten MVA-kode (en linje uten
+produkt får ingen kode av seg selv). De kommer ikke med i MVA-meldingen før
+koden er satt, så vis dem og spør. Er dette siste måned i en MVA-termin, gå
+videre med `mva-termin`-skillen.
 
 → Spør før neste steg.
 
@@ -96,6 +102,12 @@ Se etter det som mangler eller er dobbelt: husleie, lønn, avskrivninger,
 forsikring og abonnementer som pleier å komme hver måned. Spør brukeren om
 periodiseringer (forskuddsbetalt, påløpt) som skal føres. Selve
 periodiseringen gjør brukeren eller regnskapsføreren i Odoo.
+
+Har selskapet bankkontoer, fordringer eller gjeld i valuta, spør om de skal
+omvurderes til kursen på siste dag. Ved årets slutt skal de det
+(regnskapsloven § 5-9, bekreft med `lov_oppslag`). Roret regner ikke ut
+omvurderingen selv ennå: regnskapsføreren fører den som et bilag i Odoo, og
+reverserer det første dag i neste periode.
 
 → Spør om dere skal lage rapporten.
 
@@ -115,5 +127,9 @@ Avslutt med en sjekkliste:
 - [ ] Periodisering av forsikring, regnskapsfører tar det
 ```
 
-Foreslå at brukeren låser perioden i Odoo (låsedato i
-regnskapsinnstillingene) når alt er ferdig. Det gjør brukeren selv.
+Foreslå at perioden låses når alt er ferdig (låsedato for regnskapet og for
+MVA). Det krever rollen Regnskap: Administrator. Roret-kunder ber Roret
+(support@roret.no) om å sette datoen, og i Roret for Odoo gjør administratoren
+hos bedriften det under Regnskap → Konfigurasjon → Innstillinger. Les datoene
+tilbake etterpå:
+`odoo_search_read("res.company", [["id", "=", <id>]], ["fiscalyear_lock_date", "tax_lock_date"])`.

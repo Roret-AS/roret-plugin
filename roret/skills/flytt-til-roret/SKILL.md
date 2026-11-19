@@ -58,9 +58,9 @@ abonnementene fra HubSpot, og ikke regnskapet, følg
    blir åpningsbalansen foreløpig, og det kommer et korreksjonsbilag senere.
    Kunden må beholde tilgang til det gamle systemet til årsregnskap og
    skattemelding er levert.
-7. **Rettigheter:** opprette kontoer, journaler og låsedatoer krever rollen
-   Regnskap: Administrator, og å godkjenne bankkontoer for utbetaling krever
-   en egen rett. Mangler brukeren dem: Roret-kunder ber Roret
+7. **Rettigheter:** opprette kontoer, journaler og låsedatoer, og å slå på
+   en valuta, krever rollen Regnskap: Administrator, og å godkjenne
+   bankkontoer for utbetaling krever en egen rett. Mangler brukeren dem: Roret-kunder ber Roret
    (support@roret.no), og i Roret for Odoo gjør administratoren hos bedriften
    de stegene.
 
@@ -84,7 +84,10 @@ Dette må du ha før du går videre:
   tillegg én fil for hvert tidligere år i oppbevaringstiden (til arkivet).
 - **Åpne poster per faktura** for kunder og leverandører per dagen før
   byttedatoen, som Excel eller CSV: fakturanummer, KID, fakturadato, forfall,
-  restbeløp og valuta. SAF-T kan ikke erstatte denne lista.
+  restbeløp og valuta. For poster i valuta trengs restbeløpet både i valuta
+  og i kroner. SAF-T kan ikke erstatte denne lista.
+- **Kontoutskrift per `<D-1>` for hver bankkonto i valuta**, med saldoen i
+  kontoens valuta. SAF-T har bare saldoen i kroner.
 - **Saldobalanse** per samme dato (PDF eller Excel).
 - **Ved bytte midt i året:** bevegelsen per konto for hver måned i år fram
   til byttet, som Excel. Det kan være én saldobalanse per måned, eller en
