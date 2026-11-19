@@ -35,6 +35,10 @@ hent_uarkiverte_vedlegg(res_model="account.move", limit=20, company_id=<id>)
 les_dokument(document_id=<id>, include_content=True, extract_text=True, company_id=<id>)
 ```
 
+Med `extract_text=True` får du teksten i en PDF, men ikke selve fila
+(`content_base64` er tom). Skal fila videre til `motta_bilag` eller
+`opprett_utlegg_fra_dokument`, les den en gang til med `extract_text=False`.
+
 Plasser dokumentet i én av disse:
 
 | Type | Neste steg |
@@ -74,8 +78,14 @@ hva som ble kopiert fra hva (`kopiert_fra`). Bruk enten `filer` eller
 én av dem. Har brukeren mange filer, ta dem i porsjoner på fem til ti, og vis
 utkastene for hver porsjon før du går videre.
 
-Går ikke `motta_bilag` (for eksempel et bilde uten tekst), lag utkastet selv
-fra det du leste:
+En vanlig PDF-faktura uten e-faktura i seg gir et tomt utkast med fila
+påhengt (`dekodet` er `false`, og svaret har en advarsel). Roret leser ikke
+PDF-er selv. Du kan ikke fylle ut hodet på det tomme utkastet herfra, så si
+fra om det, lag utkastet selv som under, og foreslå at det tomme slettes med
+`slett_utkastfaktura` etter ja (det blir et forslag til godkjenning).
+
+Går ikke `motta_bilag` (for eksempel en PDF uten e-faktura, eller et bilde
+uten tekst), lag utkastet selv fra det du leste:
 
 1. Finn leverandøren: `finn_kunde(query="<navn eller org.nr>")`. Den søker
    ikke i alle feltene for org.nr, så søk også
@@ -84,6 +94,11 @@ fra det du leste:
    `opprett_kontakt(name=..., is_company=True, company_registry="<orgnr>", vat=..., company_id=<id>)`
    og vent på ja. Bruk gjerne `kundesjekk`-skillen.
 2. `opprett_faktura(partner_id=<id>, lines=[...], move_type="in_invoice", invoice_date="YYYY-MM-DD", ref="<leverandørens fakturanr>", company_id=<id>)`
+
+`opprett_faktura` setter ikke forfall og KID. Et utkast du lager selv, får
+forfall etter betalingsbetingelsen i Roret, ikke etter dokumentet. Si hva
+dokumentet sier om forfall og KID, og be brukeren legge det inn på utkastet i
+Roret før det bokføres. Uten det blir likviditetsbildet og betalingen feil.
 
 **Kontroller utkastet før bokføring.** Les det tilbake, med linjene og
 MVA-kodene, i ett kall:
@@ -114,7 +129,10 @@ mot dokumentet:
 
 Rett feil med `oppdater_fakturalinje(line_id=..., account_id=..., tax_ids=[...], company_id=<id>)`
 etter ja til den konkrete endringen (fra hva, til hva). Slå opp kontoer og
-skatter, aldri gjett id-er.
+skatter, aldri gjett id-er. Slå dem opp med `context={"lang": "nb_NO"}`:
+uten den kommer kontonavnene på engelsk, og MVA-kodene heter «25%» og
+«25% EX S D» i stedet for «1 Inngående MVA 25 %» og «86 Tjenester fra
+utlandet med fradrag 25 %». Si kontonavn og MVA-kode på norsk til brukeren.
 
 Vis brukeren et sammendrag (leverandør, dato, forfall, linjer med konto og
 MVA, totalt) og spør om utkastet skal bokføres. Ved ja:
@@ -132,8 +150,10 @@ bokfor_bilag(move_id=<move_id>, company_id=<id>)
 4. Opprett utlegget:
 
 ```
-opprett_utlegg_fra_dokument(employee_id=<id>, name="<kort beskrivelse>", total_amount=<beløp>, product_id=<kategori>, date="YYYY-MM-DD", payment_mode="own_account", receipt_file={"name": "...", "content_base64": "..."}, company_id=<id>)
+opprett_utlegg_fra_dokument(employee_id=<id>, name="<kort beskrivelse>", total_amount=<beløp>, product_id=<kategori>, date="YYYY-MM-DD", payment_mode="own_account", currency="NOK", receipt_file={"name": "...", "content_base64": "..."}, company_id=<id>)
 ```
+
+`currency` er valutaen kvitteringen viser, og må alltid med.
 
 Ligger kvitteringen alt i Odoo, bruk `attachment_id` i stedet for
 `receipt_file`. Utlegget lages som utkast. Den ansatte eller lederen sender

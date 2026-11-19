@@ -23,6 +23,23 @@ Regn ut `date_from` (første dag) og `date_to` (siste dag i måneden).
 Feiler ett kall (manglende modul eller tilgang), lag rapporten uten den delen
 og si hva som mangler.
 
+Les tallene slik:
+
+- **Driftsinntekter** er `revenue` i `resultatsammendrag`, uten MVA.
+- **Bruttofortjeneste** er driftsinntektene minus varekostnaden (kontoene
+  4000–4999 i `expense_by_account`). Den står ikke som eget tall.
+- **Driftsresultat** er driftsinntektene minus kontoene 4000–7999.
+  `resultat` (og `gross_profit`, som er samme tall under et gammelt navn) er
+  inntekter minus alle kostnader, også finansposter på 8000-kontoene. Det er
+  ikke bruttofortjenesten.
+- **Snitt siste 12 måneder** er `mean_monthly_eks_mva` i `omsetningstrend`.
+  `mean_monthly` og `total_revenue` er med MVA, i både `omsetningstrend` og
+  `toppkunder`, og kan ikke sammenlignes med driftsinntektene. Snittet er
+  over månedene som har fakturaer (`actual_months_with_data`). Si hvor mange
+  det er når det er færre enn tolv.
+- **Kundefordringer** per månedsslutt tar ikke med fakturaer datert etter
+  datoen, men restbeløpet er dagens.
+
 ## Skriv rapporten
 
 ```

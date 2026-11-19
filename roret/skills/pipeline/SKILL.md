@@ -15,7 +15,8 @@ hent_salgsmuligheter(company_id=<id>, only_open=True, limit=50)
 
 Avgrens hvis brukeren ba om det: egne (`user_id`), ett salgsteam
 (`team_id`), eller over et beløp (`min_expected_revenue`). Verktøyet sorterer
-dem som trenger oppmerksomhet først.
+dem som har stått lengst i samme steg, først. Hva som faktisk har stoppet
+opp, finner du i steg 2.
 
 ## Steg 2: Finn det som har stoppet opp
 
