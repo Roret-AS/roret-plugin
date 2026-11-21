@@ -113,6 +113,12 @@ uten.
 Foreslå én ting ut fra situasjonen, og gjør den med brukeren:
 
 - Kommer bedriften fra et annet regnskapssystem: `flytt-til-roret`.
+- Er selskapet nytt i Roret, uten bokførte kundefakturaer: `sett-opp-bedriften`.
+  Den tar bedriftsopplysningene, bankkontoen, KID, tjenestene og den første
+  fakturaen, og viser videre til `kunderegister`, `produkter` og
+  `abonnement`. Er selskapet et nystiftet AS, ta `nytt-as` også. Se om
+  selskapet har fakturert med
+  `odoo_call_read("account.move", "search_count", args=[[["move_type", "=", "out_invoice"], ["state", "=", "posted"]]], company_id=<id>)`.
 - Ellers, etter hva brukeren bryr seg mest om: `frister` (hva må gjøres de
   neste ukene), `likviditet` (penger inn og ut), `fredagspuls` (status for
   uka) eller `bokfor-bilag` (innboksen).

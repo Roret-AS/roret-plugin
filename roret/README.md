@@ -51,6 +51,11 @@ eksempel `/roret:purring`.
 | `kom-i-gang` | Innlogging, kobling til Odoo, selskapets profil og en første kjøring |
 | `firmaprofil` | Leser selskaper, org.nr, MVA-termin, regnskapsår, bank og lønn fra Odoo |
 | `roret-prinsipper` | Reglene Claude følger: bekreft før skriving, slå opp lovverket, personvern |
+| `sett-opp-bedriften` | Ny bedrift: opplysninger og logo, bankkonto, KID, betalingsfrist, tjenester og første tilbud og faktura |
+| `kunderegister` | Kunder og kontaktpersoner fra et regneark, med Enhetsregisteret, dubletter og tagger |
+| `produkter` | Varer og tjenester med pris og MVA, kostpris, lager, bilder, nettbutikk og forhandlerpris |
+| `abonnement` | Faste avtaler: maler, avtaler per kunde, start og første faktura |
+| `nytt-as` | Stiftelsen i aksjeeierboken og bokføringen av aksjekapitalen |
 
 ### Økonomi
 
