@@ -50,9 +50,11 @@ Reglene:
    `odoo_search_read("mail.followers", [["res_model", "=", <modell>], ["res_id", "=", <id>]], ["partner_id"])`.
    **E-post til kunder går gjennom godkjenning:** når noen utenfor bedriften
    får den, blir den et forslag med mottakerne og teksten på kortet, og
-   ingenting sendes før et menneske har godkjent det. Det samme gjelder et
-   stadium som sender e-post til kunden (`oppdater_supportsak`,
-   `opprett_oppgave`). Svarer verktøyet `venter_paa_godkjenning`, si at
+   ingenting sendes før et menneske har godkjent det. Vedlegg i
+   `attachments` står på kortet og sendes med når e-posten er godkjent.
+   Det samme gjelder et stadium som sender e-post til kunden
+   (`oppdater_supportsak`, `opprett_oppgave`, og en ny sak i et
+   standardstadium med e-postmal). Svarer verktøyet `venter_paa_godkjenning`, si at
    e-posten venter på godkjenning, ikke at den er sendt. Gikk den rett ut
    (kundens regel tillater det), sammenlign `notified_partner_ids` i svaret
    med lista, og si fra hvis noen andre fikk meldingen.
