@@ -61,11 +61,14 @@ og `lov_oppslag("forsinkelsesrente sats")`. Oppgi lov og paragraf.
 
 Det modulen passer på, og som du skal forklare når brukeren spør:
 
-- **Forbruker eller næringsdrivende.** Kunden er forbruker når
-  kontakten ikke er et selskap, med mindre `l10n_no_debtor_class` på kunden
-  sier noe annet. Forbrukere kan få purregebyr, men aldri
-  standardkompensasjon. Næringsdrivende kan få standardkompensasjon, men ikke
-  både den og purregebyr for samme krav.
+- **Forbruker eller næringsdrivende.** Borettslag, sameier og foreninger
+  regnes som forbrukere, når organisasjonsformen fra Enhetsregisteret står
+  på kunden (`roret_organisasjonsform`: BRL, ESEK, SAM eller FLI). Ellers er
+  et selskap næringsdrivende og en person forbruker. `l10n_no_debtor_class`
+  på kunden overstyrer, og `l10n_no_debtor_class_effective` («Regnes som» på
+  kundekortet) viser hva purringen bruker. Forbrukere kan få purregebyr, men
+  aldri standardkompensasjon. Næringsdrivende kan få standardkompensasjon,
+  men ikke både den og purregebyr for samme krav.
 - **Gebyr** krever et varsel sendt tidligst 14 dager etter forfall, med ny
   frist. Antall gebyrbelagte varsler per krav er begrenset.
 - **Forsinkelsesrente** løper fra forfall, og faktureres som en egen nota
@@ -73,11 +76,56 @@ Det modulen passer på, og som du skal forklare når brukeren spør:
 - **Inkasso:** det siste varselet før et krav sendes til inkasso har krav til
   innhold og frist. Vil brukeren sende til inkasso, anbefal et inkassobyrå.
 
+## Før første kjøring: borettslag, sameier og foreninger
+
+Har selskapet ingen purrekjøringer ennå, gjør dette før du anbefaler å
+kjøre purreløpet:
+
+```
+odoo_call_read("credit.control.run", "search_count", args=[[]], company_id=<id>)
+```
+
+1. Spør: «Har dere borettslag, sameier eller foreninger blant kundene?»
+2. Si hvordan Roret regner dem nå. Borettslag, sameier og foreninger er
+   forbrukere i purringen: de kan få purregebyr, men aldri
+   standardkompensasjon. Det gjelder bare når organisasjonsformen fra
+   Enhetsregisteret står på kunden: BRL (borettslag), ESEK
+   (eierseksjonssameie), SAM (tingsrettslig sameie) og FLI (forening, lag
+   eller innretning). En kunde uten organisasjonsform regnes etter
+   Selskap/Person, så et borettslag lagt inn for hånd eller fra en import er
+   næringsdrivende til formen er hentet. Boligbyggelag (BBL) og
+   samvirkeforetak (SA) er næringsdrivende. Med standardoppsettet får alle
+   kunder purregebyr. Skillet betyr noe når et trinn er satt til
+   «Automatisk» eller standardkompensasjon. Regelen er Rorets beslutning.
+   Forsinkelsesrenteloven finnes ikke i `lov_oppslag` ennå, så si at
+   § 3a ikke er kontrollert der, hvis brukeren spør om loven.
+3. Svarer brukeren ja, finn kundene som mangler formen:
+
+   ```
+   odoo_search_read("res.partner", [["is_company","=",True],["parent_id","=",False],["customer_rank",">",0],["roret_organisasjonsform","=",False]], ["name","company_registry","l10n_no_debtor_class","l10n_no_debtor_class_effective"], limit=200, company_id=<id>)
+   ```
+
+   Foreslå dem som ser ut som borettslag, sameier eller foreninger, og la
+   brukeren rette lista. Slå opp hver av dem på org.nr. med
+   `sok_i_enhetsregisteret(query="<org.nr.>", company_id=<id>)`. Formen står i
+   `verdier.roret_organisasjonsform`. Vis navn, org.nr. og form, vent på ja,
+   og skriv formen på kunden:
+
+   ```
+   odoo_write("res.partner", [<kunde>], {"roret_organisasjonsform": "<kode>"}, company_id=<id>)
+   ```
+
+   Har kunden ikke org.nr., eller ikke Rorets oppslag i Enhetsregisteret,
+   sett skyldnertypen i stedet, etter ja: `{"l10n_no_debtor_class": "consumer"}`.
+4. Vil brukeren regne en forening som driver næring som næringsdrivende,
+   sett `l10n_no_debtor_class` til `business` på den, etter ja.
+
 ## Steg 4: Velg handling
 
 Spør brukeren hva de vil:
 
-**(a) Kjør purreløpet i Roret** (anbefalt når kunden har det). Brukeren gjør
+**(a) Kjør purreløpet i Roret** (anbefalt når kunden har det). Første gang:
+gå gjennom «Før første kjøring» over. Brukeren gjør
 det selv i Odoo under menyen **Purring** (på engelsk «Credit Control»): lag
 en ny kjøring, se gjennom linjene, og send. Gebyr og rente lages da automatisk og riktig, og vaktene
 over gjelder. Du kan vise hva kjøringen kommer til å ta med (steg 2), men
