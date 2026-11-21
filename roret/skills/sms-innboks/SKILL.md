@@ -84,8 +84,20 @@ Vis mottaker (`resolved_recipients`), teksten og hvor SMS-en logges
 svar_pa_sms(svar_id=<id>, body=<tekst>, dry_run=False)
 ```
 
-Svaret krysses av som behandlet når SMS-en er sendt. Bruk
-`marker_behandlet=False` hvis det skal bli stående i «Må følges opp».
+**Et svar til en kunde går gjennom godkjenning** (#1940): svaret blir et
+forslag (`venter_paa_godkjenning`) med nummeret og teksten på kortet, og et
+menneske godkjenner det i Roret-appen eller i Odoo under Assistent → Til
+godkjenning, der teksten kan rettes først. Si at svaret venter på
+godkjenning, ikke at det er sendt. Et svar til en kollega går rett ut.
+
+Svaret krysses av som behandlet når SMS-en er sendt, altså først når
+forslaget er godkjent. Bruk `marker_behandlet=False` hvis det skal bli
+stående i «Må følges opp».
+
+Blir det tungt å godkjenne hvert svar, si at en administrator kan slakke
+regelen for `svar_pa_sms` i Odoo, under Assistent → Konfigurasjon → Regler:
+«uten godkjenning», eller en grense i antall mottakere utenfor bedriften.
+Det er bedriftens valg, og Claude endrer ikke regelen.
 
 ## Steg 7: Kvitter ut eller send videre
 
@@ -98,9 +110,9 @@ Svaret krysses av som behandlet når SMS-en er sendt. Bruk
 ## Når brukeren gir fri hånd
 
 Sier brukeren uttrykkelig «kvitter ut alle ok-svarene», kan du vise ett
-sammendrag («Kvitterer ut 6 svar og sender 2 SMS, bekreft?») og gjøre det
-etter én bekreftelse. Noe som går til en kunde, krever alltid minst den ene
-bekreftelsen.
+sammendrag («Kvitterer ut 6 svar og legger 2 SMS til godkjenning,
+bekreft?») og gjøre det etter én bekreftelse. Noe som går til en kunde,
+krever alltid minst den ene bekreftelsen.
 
 ## Spesialtilfeller
 

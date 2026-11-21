@@ -30,8 +30,8 @@ nøyaktig hva som skjer og sagt ja:
 |---|---|
 | Regnskap (kan ikke angres uten motpost) | `bokfor_bilag`, `registrer_betaling`, `avstem_banklinje_mot_faktura`, `avstem_banklinje_mot_fakturaer`, `avstem_banklinje_mot_hovedbokslinje`, `avstem_banklinje_mot_hovedbokslinjer`, `avstem_stripe_utbetaling` |
 | Utkast i regnskapet | `opprett_faktura`, `oppdater_fakturalinje`, `motta_bilag`, `opprett_utlegg_fra_dokument`, `slett_utkastfaktura`, `lag_bilag_for_selskapshandling` |
-| Kontakt med kunder (kan ikke trekkes tilbake) | `send_sms`, `svar_pa_sms`, `send_masseutsendelse`, `send_tidsvindu_sms`, `skriv_i_chatter` med `as_email=True` |
-| Annet som endrer data | `opprett_kontakt`, `oppdater_supportsak`, `opprett_lead`, `slett_lead`, `konverter_lead_til_salgsmulighet`, `oppdater_salgsmulighet`, `planlegg_aktivitet`, `marker_aktivitet_ferdig`, `marker_sms_behandlet`, `opprett_kalenderhendelse`, `last_opp_dokument`, `flytt_dokument`, `arkiver_vedlegg`, `opprett_styremote`, `legg_til_styresak`, `skriv_protokolltekst`, `husk_forklaring`, `foresla_selskapshandling`, `start_selskapshandling_fra_vedtak`, `registrer_maaling`, `koble_fra_odoo`, `odoo_create`, `odoo_write`, `odoo_unlink`, `odoo_call_button` |
+| Kontakt med kunder (kan ikke trekkes tilbake) | `send_sms`, `svar_pa_sms`, `send_masseutsendelse`, `send_tidsvindu_sms`, `skriv_i_chatter` med `as_email=True`, `opprett_kalenderhendelse` med `notify_attendees=True` |
+| Annet som endrer data | `opprett_kontakt`, `oppdater_supportsak`, `opprett_lead`, `slett_lead`, `konverter_lead_til_salgsmulighet`, `oppdater_salgsmulighet`, `planlegg_aktivitet`, `marker_aktivitet_ferdig`, `marker_sms_behandlet`, `opprett_kalenderhendelse` uten invitasjoner, `last_opp_dokument`, `flytt_dokument`, `arkiver_vedlegg`, `opprett_styremote`, `legg_til_styresak`, `skriv_protokolltekst`, `husk_forklaring`, `foresla_selskapshandling`, `start_selskapshandling_fra_vedtak`, `registrer_maaling`, `koble_fra_odoo`, `odoo_create`, `odoo_write`, `odoo_unlink`, `odoo_call_button` |
 | Markedsføring (utkast og forslag, sender eller publiserer ingenting) | `lag_nyhetsbrevutkast`, `planlegg_innlegg`, `opprett_kampanje`, `oppdater_markedsprofil` |
 
 Lista er ikke uttømmende: ethvert verktøy som oppretter, endrer, sender eller
@@ -56,6 +56,12 @@ Reglene:
    e-posten venter på godkjenning, ikke at den er sendt. Gikk den rett ut
    (kundens regel tillater det), sammenlign `notified_partner_ids` i svaret
    med lista, og si fra hvis noen andre fikk meldingen.
+   **SMS og kalenderinvitasjoner til kunder går også gjennom godkjenning**
+   (`send_sms`, `svar_pa_sms`, og `opprett_kalenderhendelse` med
+   `notify_attendees=True`): når noen utenfor bedriften får dem, blir de et
+   forslag med mottakerne og teksten eller beskrivelsen på kortet. Til
+   kolleger går de som før. Svarer verktøyet `venter_paa_godkjenning`, si at
+   SMS-en eller invitasjonen venter på godkjenning, ikke at den er sendt.
 2. **«Alle» betyr en liste, ikke en løkke.** Ber brukeren om å slette, sende
    eller bokføre «alle», henter du lista, viser antall og sammendrag, og
    spør om dere skal ta dem én og én eller avgrense. En godkjenning gjelder
