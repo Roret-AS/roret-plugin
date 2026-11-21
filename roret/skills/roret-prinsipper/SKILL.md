@@ -161,10 +161,12 @@ utført, les posten på nytt for å se om endringen gikk gjennom før du prøver
 igjen.
 
 Krever regelen godkjenning, blir et rått kall et **forslag** i Roret, ikke
-en endring. Svaret er da en feil som sier at forslaget venter på godkjenning i
-Roret-appen eller i Odoo. Ingenting er gjort. Ikke prøv igjen (samme kall gir
+en endring. Svaret har da `status: venter_paa_godkjenning`, som fra de andre
+verktøyene, og er ikke en feil. Ingenting er gjort. Ikke prøv igjen (samme kall gir
 samme forslag), og ikke prøv rundt med et annet verktøy. Si til brukeren at
-forslaget venter, og hvor. Kortet lager Roret selv av postene, med gammel og
+forslaget venter i Odoo under **Assistent → Til godkjenning** (`sti`), og gi
+lenken til kortet (`lenke`) når svaret har den. Det kan også godkjennes i
+Roret-appen. Kortet lager Roret selv av postene, med gammel og
 ny verdi for hvert felt. En knapp (`odoo_call_button`) kan bare foreslås slik
 den er i Odoo: en metode som heter `action_…` eller `button_…`, på postene,
 uten andre argumenter enn konteksten. Blir kallet stoppet (hovedboka, lønn,
