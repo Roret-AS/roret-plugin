@@ -18,13 +18,20 @@ inn, og du ser den aldri.
 
 Spør hvis det ikke er klart:
 
-- **Roret:** regnskapet ligger hos Roret. Roret har laget brukeren og slår på
-  Assistent for den.
+- **Roret:** regnskapet ligger hos Roret. Administratoren hos bedriften har
+  Assistent fra start, og gir den videre til de andre under **Assistent →
+  Konfigurasjon → Hvem har Assistent**.
 - **Roret for Odoo:** bedriften har sin egen Odoo med Rorets moduler.
-  Administratoren hos bedriften gir tilgang til Assistent.
+  Administratoren hos bedriften gir tilgangen **Assistent** på brukeren
+  (Innstillinger → Brukere).
+
+I begge gir administratoren hos bedriften Assistent, ikke Roret. Roret lager
+heller ingen innlogging til Claude: brukeren logger inn med Microsoft eller
+Google.
 
 Brukeren trenger: et Claude-abonnement som støtter plugins og koblinger, en
-innlogging til Roret-koblingen, og at Assistent er slått på for brukeren.
+jobbkonto hos Microsoft eller Google med samme e-postadresse som brukeren i
+Roret, og Assistent på brukeren.
 
 ## Steg 1: Logg inn på Roret-koblingen
 
@@ -36,13 +43,17 @@ gang må brukeren logge inn:
    `/mcp`, velg **roret** og **Authenticate**.
 2. Trykk **Connect** eller **Logg inn**. Nettleseren åpner Rorets
    innloggingsside.
-3. Logg inn med brukeren Roret har gitt deg (Roret-kunder), eller med
-   jobbkontoen fra Microsoft eller Google hvis innloggingssiden tilbyr det.
-   Bruk samme e-postadresse som brukeren din i Odoo. Har Roret gitt et
-   midlertidig passord, blir brukeren bedt om å lage et nytt.
+3. Velg **Microsoft** eller **Google**, og logg inn med jobbkontoen som har
+   samme e-postadresse som brukeren din i Roret. Første gang lages
+   innloggingen av seg selv. Feltene for e-post og passord på siden gjelder
+   bare innlogginger Roret har laget.
 4. Godkjenn tilgangen. Koblingen skal nå stå som tilkoblet.
 
 Vent på bekreftelse. Feiler det, se feilsøkingen nederst.
+
+Har bedriften verken Microsoft eller Google, kan brukeren lage en
+Google-konto med jobbadressen sin. Går ikke det, skriv til support@roret.no,
+så lager Roret en innlogging med passord.
 
 ## Steg 2: Er Odoo koblet til?
 
@@ -66,11 +77,10 @@ Verktøyet gir en engangskode som gjelder i 10 minutter. Gi brukeren koden og
 denne oppskriften:
 
 1. Åpne Roret (Odoo) i nettleseren og logg inn som deg selv.
-2. Trykk på profilbildet øverst til høyre → **Mine innstillinger** → fanen
-   **Assistent** → **Åpne Assistent**.
-3. Lim inn koden og trykk **Koble til**.
+2. Trykk på profilbildet øverst til høyre og velg **Koble Claude til Roret**.
+3. Lim inn koden i **Engangskode** og trykk **Koble til**.
 4. Odoo viser hvilken Claude-innlogging koden hører til. **Kontroller at det
-   er din** før du bekrefter.
+   er din**, kryss av og trykk **Koble til** igjen.
 
 Si dette tydelig: koden skal bare limes inn av brukeren selv, i sin egen
 Odoo. Har noen andre sendt deg en kode og bedt deg lime den inn, ikke gjør
@@ -79,20 +89,17 @@ det.
 E-postadressen på innloggingen i steg 1 må være den samme som på brukeren i
 Odoo. Er den ikke det, avviser Odoo koblingen.
 
-**Ser brukeren ikke fanen Assistent:**
-
-- Roret-kunde: Assistent er ikke slått på for brukeren ennå. Be brukeren
-  skrive til support@roret.no. Det er Roret som slår det på, ikke
-  administratoren hos dere, uansett hva verktøyets svar sier.
-- Roret for Odoo: administratoren hos bedriften må gi brukeren tilgang til
-  Assistent.
+**Finner brukeren ikke «Koble Claude til Roret», eller sier siden at
+brukeren ikke har Assistent ennå:** brukeren har ikke fått Assistent.
+Administratoren hos bedriften gir den, slik steg 0 sier. Det er det samme
+som verktøyets svar sier.
 
 Når brukeren har trykket Koble til, kjør kallet fra steg 2 igjen.
 
 **Flere baser** (regnskapsfører med flere klienter, konsern): finnes
 `mine_baser()`, viser den hvilke baser brukeren alt har koblet til. En ny base
-kobles med `koble_til_odoo(ny_base=True)` og samme oppskrift i den andre
-basens Odoo.
+kobles med `koble_til_odoo()` og samme oppskrift i den andre basens Odoo.
+Basen avgjøres av Odoo-en koden limes inn i.
 
 ## Steg 4: Les selskapets profil
 
@@ -135,7 +142,8 @@ Foreslå én ting ut fra situasjonen, og gjør den med brukeren:
   «er vi klare for MVA-meldingen?»), eller bruk navnene som kommandoer,
   for eksempel `/roret:purring`.
 - **Koble fra:** si «koble fra Odoo» til Claude (`koble_fra_odoo`), og trykk
-  **Koble fra** på fanen Assistent i Roret. Da er begge halvdelene borte.
+  **Koble fra** på samme side i Roret (profilbildet → **Koble Claude til
+  Roret**). Da er begge halvdelene borte.
 
 ## Feilsøking
 
@@ -143,10 +151,10 @@ Foreslå én ting ut fra situasjonen, og gjør den med brukeren:
 |---|---|
 | Koblingen står som «needs authentication» | Gjør steg 1 på nytt |
 | 401 eller «invalid_token» | Innloggingen er utløpt. Logg inn på nytt |
-| Innloggingssiden godtar ikke brukeren | Roret-kunde: kontakt support@roret.no. Roret for Odoo: administratoren hos dere, eller support@roret.no |
+| «Feil e-postadresse eller passord» på innloggingssiden | Bruk knappen Microsoft eller Google, ikke feltene. Har bedriften verken Microsoft eller Google, se slutten av steg 1 |
 | «Ikke koblet til Odoo» | Steg 3 |
 | Koden er utløpt | Kjør `koble_til_odoo()` på nytt. Koden gjelder i 10 minutter |
-| Odoo avviser koden fordi e-posten ikke stemmer | Roret-kunde: kontakt support@roret.no. Roret for Odoo: administratoren |
-| Fanen Assistent finnes ikke | Se steg 3 |
+| Odoo sier at koden tilhører en annen Claude-konto | Har brukeren laget koden selv, er innloggingen i steg 1 en annen e-postadresse enn brukeren i Roret. Logg inn på koblingen på nytt med kontoen som har samme adresse, og lag en ny kode. Har noen andre sendt koden, ikke bruk den |
+| «Koble Claude til Roret» finnes ikke, eller sier at brukeren ikke har Assistent | Se steg 3 |
 | Innlogget og koblet til, men verktøyene gir tilgangsfeil | Brukeren mangler en rolle i Odoo. Se `roret-prinsipper` §5 |
 | Verktøyene vises ikke i Claude | Lukk Claude helt, åpne igjen, og sjekk koblingen |
