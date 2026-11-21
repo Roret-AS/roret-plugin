@@ -56,12 +56,18 @@ Trengs mer: kundens fakturaer eller avtaler (`folg-opp` steg 2), vedlegg
 
 E-posten går til alle som følger saken, ikke bare kunden. Hent dem først:
 `odoo_search_read("mail.followers", [["res_model", "=", "helpdesk.ticket"], ["res_id", "=", <id>]], ["partner_id"])`.
-Vis teksten og alle mottakerne. Etter et tydelig ja, send, og kontroller
-`notified_partner_ids` i svaret mot lista:
+Vis teksten og alle mottakerne. Etter et tydelig ja, send:
 
 ```
 skriv_i_chatter(model="helpdesk.ticket", res_id=<id>, body=<svaret>, as_email=True)
 ```
+
+E-post til kunden går gjennom godkjenning: svaret blir et forslag
+(`venter_paa_godkjenning`) med mottakerne og teksten på kortet, og et menneske
+godkjenner det i Roret-appen eller i Odoo, der teksten kan rettes først. Si
+at svaret venter på godkjenning, ikke at det er sendt. Gikk det rett ut
+(kundens regel tillater det), kontroller `notified_partner_ids` i svaret mot
+lista.
 
 Interne notater (til kolleger) sendes med `as_email=False`, som er standard.
 
@@ -89,8 +95,11 @@ saker i `hent_supportsaker`, eller med
 `odoo_search_read("res.users", [["name", "ilike", "<navn>"]], ["id", "name"])`.
 
 Har stadiet `sender_epost_til_kunden`, sender Odoo e-post til kunden når
-saken flyttes dit. Verktøyet avviser da kallet. Si det til brukeren, og kall
-igjen med `stage_email_ok=True` bare etter et ja til den e-posten.
+saken flyttes dit. Si det til brukeren. Flyttingen blir da et forslag med
+malen og mottakeren på kortet, og saken flyttes først når et menneske har
+godkjent det. Avviser verktøyet kallet i stedet (kundens regel slipper
+e-posten gjennom), kall igjen med `stage_email_ok=True` bare etter et ja til
+den e-posten.
 
 ## Oversikt over supporttrykket
 
