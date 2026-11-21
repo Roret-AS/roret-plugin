@@ -13,10 +13,13 @@ Roret regner dem ut fra loven og selskapets profil:
 frister(company_id=<id>, date_from="YYYY-MM-DD", date_to="YYYY-MM-DD")
 ```
 
-Standard er de neste 60 dagene. Svaret har dato, frist, periode og hjemmel
-for MVA-melding og betaling, a-melding, arbeidsgiveravgift, forskuddstrekk og
-forskuddsskatt. En frist som faller på helg eller helligdag, er flyttet til
-neste virkedag (`flyttet_fra` er datoen i loven).
+Standard er de neste 60 dagene, og tidsrommet kan være høyst to år. Svaret
+har dato, frist, periode og hjemmel for MVA-melding og betaling, a-melding,
+arbeidsgiveravgift, forskuddstrekk og forskuddsskatt. En frist som faller på
+helg eller helligdag, er flyttet til neste virkedag (`flyttet_fra` er datoen
+i loven). MVA-fristene begynner ved terminen selskapet ble registrert i
+Merverdiavgiftsregisteret (`mva.registrert_fra` i `firmaprofil`), og slutter
+før slettingen.
 
 Les `antakelser` og si dem til brukeren: for eksempel at terminlengden ikke
 er kjent og er regnet som annenhver måned. Vet brukeren bedre, kall igjen
@@ -73,8 +76,9 @@ Legg på status der du kan hente den raskt:
 - MVA-melding: `mva_status(year=<år>, period="<termin>", company_id=<id>)`.
   Selve kontrollen av grunnlaget gjøres i `mva-termin`.
 
-Ber brukeren om hele året, kall `frister` for året og vis en årskalender per
-måned.
+Ber brukeren om hele året, kall `frister` fra i dag til 31. desember, eller
+til 31. desember neste år når brukeren mener det kommende året, og vis en
+årskalender per måned.
 
 ## Påminnelser
 
