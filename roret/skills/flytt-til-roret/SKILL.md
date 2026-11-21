@@ -51,9 +51,11 @@ abonnementene fra HubSpot, og ikke regnskapet, følg
    og skylden står på oppgjørskontoen (2740).
 5. **Lønn:** byttes ved et månedsskifte, helst ved årsskifte. Roret kan ennå
    ikke ta inn hittil-i-år-tall for lønn, bare inngående feriepenger og
-   feriepengegrunnlag per ansatt. Skal lønn flyttes midt i året, avklar det
-   med Roret først. Samme a-melding-måned skal aldri sendes fra to systemer,
-   og arbeidsforholds-ID-ene må videreføres likt.
+   feriepengegrunnlag per ansatt. Skal lønn byttes midt i året, følg
+   oppskriften under «Lønn» i [metode.md](metode.md): hvilken lønn som er den
+   siste i det gamle systemet, hvordan lønnsbilaget for den føres i Roret, og
+   hva som sies til Roret. Samme a-melding-måned skal aldri sendes fra to
+   systemer, og arbeidsforholds-ID-ene må videreføres likt.
 6. **Årsoppgjøret for siste år i det gamle systemet:** er det ikke ferdig,
    blir åpningsbalansen foreløpig, og det kommer et korreksjonsbilag senere.
    Kunden må beholde tilgang til det gamle systemet til årsregnskap og
@@ -104,7 +106,8 @@ abonnementene fra HubSpot, og ikke regnskapet, følg
    Hilsen <navn>
    ```
 
-⛔ Oppsummer rammen (selskap, kilde, byttedato, lønn med eller ikke) og få ja.
+⛔ Oppsummer rammen (selskap, kilde, byttedato, lønn med eller ikke, og med
+lønn: den siste lønnen i det gamle systemet og den første i Roret) og få ja.
 
 ## Steg 2: Last ned fra det gamle systemet
 

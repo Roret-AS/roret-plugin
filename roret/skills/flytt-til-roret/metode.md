@@ -315,8 +315,71 @@ Inngående feriepenger og feriepengegrunnlag per ansatt settes av brukeren
 på den ansatte i Odoo (felt som begynner med `l10n_no_inngaende_feriepenger`, se
 `odoo_fields_get("hr.employee", ["string"])`). Hittil-i-år-tall for trekk,
 arbeidsgiveravgift og pensjon kan ikke legges inn ennå. Arbeidsforholds-ID-en
-fra det gamle systemet skal videreføres på arbeidsforholdet. Avklar flytting
-av lønn midt i året med Roret.
+fra det gamle systemet skal videreføres på arbeidsforholdet.
+
+### Bytte midt i året
+
+A-meldingen leveres per kalendermåned, senest den 5. i måneden etter
+(a-opplysningsloven § 4 og a-opplysningsforskriften § 2-1). Lønn kan derfor
+byttes ved et månedsskifte også midt i året. Skriv oppskriften under for
+brukeren med datoene hens, og få ja før steg 2 i SKILL.md.
+
+1. **Den siste lønnen i det gamle systemet.** Regn etter utbetalingsdagen,
+   fordi lønnen rapporteres i a-meldingen for måneden den utbetales (steg 1 i
+   `lonn-forberedelse`). Den siste lønnen kjøres ferdig der: a-meldingen
+   sendes og godkjennes derfra, og forskuddstrekket og arbeidsgiveravgiften
+   betales som før. Er regnskapet byttet 1. november og novemberlønna
+   utbetales 30. november, kjøres novemberlønna i det gamle systemet, og
+   desemberlønna er den første i Roret. Send aldri a-melding for samme måned
+   fra begge systemene. En ny melding kommer i tillegg til den gamle og
+   erstatter den ikke, så lønnen og trekket telles to ganger. Bare en
+   erstatningsmelding som viser til referansen til den gamle meldingen,
+   erstatter den (a-opplysningsforskriften § 1-4).
+2. **Lønnsbilaget i Roret.** Regnskapet føres i Roret fra byttedatoen. Lønn
+   som utbetales etter den, men kjøres i det gamle systemet, føres derfor for
+   hånd i Roret, ett bilag per kjøring, datert utbetalingsdagen. Be brukeren
+   ta ut posteringene (lønnsjournalen) for kjøringen fra det gamle systemet.
+   Lag bilaget som tabell med de samme beløpene, på kontoene Roret selv
+   bruker for lønn, så første lønn i Roret treffer de samme kontoene:
+
+   | Linje fra lønnsjournalen | Debet | Kredit |
+   |---|---|---|
+   | Lønn og tillegg (brutto) | 5000 | 2930 |
+   | Forskuddstrekk | 2930 | 2600 |
+   | Arbeidsgiveravgift | 5400 | 2770 |
+   | Feriepenger avsatt | 5092 | 2940 |
+   | Arbeidsgiveravgift av feriepengene | 5405 | 2781 |
+
+   Andre trekk (fagforening, pensjon den ansatte betaler, utlegg) føres som i
+   lønnsjournalen, mot 2930. Netto lønn blir stående på 2930 til banklinja
+   for utbetalingen avstemmes mot den (`avstem-bank`). Står beløpene på andre
+   kontoer i det gamle systemet, vis brukeren forskjellen. Få ja på tabellen,
+   la brukeren føre den som utkast i journalen for diverse (Regnskap →
+   Regnskap → Bilag, referanse «Lønn <måned> fra <system>»), les utkastet
+   tilbake som åpningsbilaget i steg 10, fest lønnsjournalen til bilaget og
+   bokfør med `bokfor_bilag(move_id=<id>, company_id=<C>)`.
+3. **Første lønn i Roret.** Uten en kjøring i Roret åpner Lønn → Kjør lønn
+   den første lønnen der lønnsdagen ikke er passert. Fram til lønnsdagen for
+   den siste lønnen i det gamle systemet viser siden derfor den lønnen
+   (november i eksempelet). Trykk ikke «Beregn og kontroller» da: det lager en
+   kjøring i Roret for en lønn som kjøres i det gamle systemet. Fra dagen
+   etter viser siden neste måned, som er den første i Roret. Før den kjøres:
+   inngående feriepenger og feriepengegrunnlag for opptjeningsåret på hver
+   ansatt (fanen Skattekort), arbeidsforholds-ID-en fra det gamle systemet,
+   virksomheten og skattekortene (`lonn-forberedelse`).
+4. **Hva som sies til Roret.** I Roret skriver brukeren til
+   support@roret.no før første lønn i Roret. I Roret for Odoo er det
+   lønnsansvarlig hos bedriften som må vite det samme:
+   - den siste lønnen i det gamle systemet og den første i Roret, med
+     utbetalingsdagene, og at a-meldingen for den siste er godkjent,
+   - at arbeidsforholds-ID-ene fra det gamle systemet er videreført. En ny ID
+     ser ut som et nytt arbeidsforhold i a-meldingen, og det gamle står da
+     åpent,
+   - om virksomheten er i sone 1a: Roret regner fribeløpet for
+     arbeidsgiveravgiften bare av lønnen som er kjørt i Roret.
+
+   Lønnsslippene fra Roret viser hittil i år bare for lønnen som er kjørt i
+   Roret. Si det til brukeren.
 
 ## Korreksjon etter endelig årsoppgjør
 
