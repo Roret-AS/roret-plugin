@@ -1,13 +1,19 @@
 ---
 name: lonn-forberedelse
-description: Sjekkliste før lønnskjøringen, kun lesing — status på lønnskjøringen for måneden, nyansatte og sluttere, fravær og ferie, utlegg som venter på refusjon, ansatte som mangler skattekort, fødselsnummer eller kontonummer, og fristen for a-meldingen. Bruk denne når brukeren skal kjøre lønn, spør «er vi klare for lønn», vil ha lønnsforberedelse, eller lurer på hva som mangler før a-meldingen.
+description: Sjekkliste før lønnskjøringen — status på lønnskjøringen for måneden, nyansatte og sluttere, yrkeskode og virksomhet, fravær og ferie, utlegg som venter på refusjon, ansatte som mangler skattekort, fødselsnummer eller kontonummer, og fristen for a-meldingen. Leser, og foreslår nye ansatte med kontrakt som et menneske godkjenner. Bruk denne når brukeren skal kjøre lønn, spør «er vi klare for lønn», vil ha lønnsforberedelse, vil legge inn ansatte, eller lurer på hva som mangler før a-meldingen.
 ---
 
 # Lønnsforberedelse
 
-Denne skillen leser bare. Selve lønnskjøringen og a-meldingen gjøres i
-Roret av den som har lønnsrollen. Bruk `firmaprofil` for selskap, lønnsdag
-og om lønnen utbetales samme måned eller måneden etter.
+Denne skillen leser, og foreslår nye ansatte (steg 3b). Selve
+lønnskjøringen og a-meldingen gjøres i Roret av den som har lønnsrollen.
+Bruk `firmaprofil` for selskap, lønnsdag og om lønnen utbetales samme måned
+eller måneden etter.
+
+Er lønnen flyttet fra et annet lønnssystem i år, eller skal den flyttes,
+følg oppskriften under «Lønn» i `flytt-til-roret` (metode.md): den siste
+lønnen i det gamle systemet, lønnsbilaget i Roret og den første lønnen i
+Roret.
 
 ## Steg 1: Hvilken måned
 
@@ -48,6 +54,26 @@ Se etter:
 Gir kallet tilgangsfeil, har brukeren ikke lønnsrollen. Si det, og ta resten
 av sjekklista.
 
+**Yrkeskoden og virksomheten.** A-meldingen krever begge for hvert
+arbeidsforhold. Les dem på kontrakten:
+
+```
+odoo_search_read("hr.version", [["company_id","=",<id>],["contract_date_start","!=",false]], ["employee_id","job_title","l10n_no_yrkeskode_id","l10n_no_virksomhet_id"])
+```
+
+- **Yrkeskoden** er en sjusifret kode fra SSBs yrkeskatalog, og mange koder
+  har bransjen og antallet ansatte i parentes. Kontroller hver kode med
+  `finn_yrkeskode(stilling=<stillingen>, bransje=<bransjen fra firmaprofil>, antall_ansatte=<antallet med kontrakt>)`.
+  Mangler koden, eller står det en bransje eller størrelse i den som ikke
+  passer bedriften (for eksempel «butikk – over 9 ansatte» i et elektrofirma
+  med fire ansatte), vis brukeren de beste treffene. Koden byttes på den
+  ansatte i Roret (Ansatte → den ansatte → Lønnsavregning → Yrkeskode).
+- **Virksomheten** er underenheten i Enhetsregisteret. Mangler den på
+  kontrakten, velges den samme sted. Har selskapet ingen virksomhet, stopper
+  Lønn → Kjør lønn steg 1. I Roret legger Roret den inn
+  (support@roret.no). I Roret for Odoo legger lønnsansvarlig den inn under
+  Lønn → Konfigurasjon → Virksomheter.
+
 I Roret for Odoo kan en bruker med rollen Innstillinger lese tellerne for det
 som mangler i lønnsoppsettet. I Roret har ingen hos kunden den rollen, så
 hopp over kallet der og pek på siden **Lønn → Kjør lønn**, som viser det
@@ -59,6 +85,26 @@ odoo_search_read("res.company", [["id","=",<id>]], ["l10n_no_lonn_steg","l10n_no
 
 Gir kallet tilgangsfeil, si at tellerne ikke kan leses herfra, og pek på
 **Lønn → Kjør lønn** i Roret.
+
+## Steg 3b: Nye ansatte
+
+Skal en ansatt legges inn, gjør det med `opprett_ansatt`. Det blir alltid et
+forslag et menneske med personalansvar godkjenner i Roret-appen eller i
+Roret, og da lages den ansatte med kontrakten. Finn yrkeskoden med
+`finn_yrkeskode` først, og vis brukeren verdiene i en tabell (navn, stilling,
+startdato, fastlønn med månedslønn eller timelønn, stillingsprosent,
+feriepengesats, yrkeskode, fødselsnummer og kontonummer) før du kaller.
+Fødselsnummeret og kontonummeret skal komme fra brukeren, aldri gjettes.
+Spør om feriepengesatsen: 10,2 er lovens minimum, og 12 gjelder ved avtalt
+femte ferieuke. Slå opp satsene med `lov_oppslag`.
+
+```
+opprett_ansatt(navn="<navn>", company_id=<id>, startdato="YYYY-MM-DD", yrkeskode="<7 sifre>", stilling="<stilling>", fodselsnummer="<11 sifre>", kontonummer="<11 sifre>", avlonning="fast_lonn", maanedslonn=<beløp>, feriepengesats=<sats>)
+```
+
+Én ansatt per kall. Kontoen godkjennes for utbetaling av den som godkjenner
+lønnen, i Kjør lønn. Skattekortet hentes når den ansatte er laget (Ansatte →
+Handlinger → Hent skattekort fra Skatteetaten).
 
 ## Steg 4: Fravær og ferie i måneden
 
@@ -97,6 +143,8 @@ annenhver måned. Bruk dem i sjekklista.
 ## Lønn <måned> — <selskap>
 - Kjøring: ikke laget ennå
 - Nyansatte: Kari Nordmann fra 1. oktober, mangler skattekort
+- Yrkeskode: Ola Hansen har «daglig leder (butikk – over 9 ansatte)», foreslått
+  «daglig leder (bygg og anlegg – færre enn 10 ansatte)»
 - Sluttere: ingen
 - Fravær til godkjenning: 2 søknader
 - Utlegg til refusjon: 3 godkjente (4 120 kr), 1 venter på godkjenning
