@@ -58,11 +58,51 @@ abonnementene fra HubSpot, og ikke regnskapet, følg
    blir åpningsbalansen foreløpig, og det kommer et korreksjonsbilag senere.
    Kunden må beholde tilgang til det gamle systemet til årsregnskap og
    skattemelding er levert.
-7. **Rettigheter:** opprette kontoer, journaler og låsedatoer, og å slå på
-   en valuta, krever rollen Regnskap: Administrator, og å godkjenne
-   bankkontoer for utbetaling krever en egen rett. Mangler brukeren dem: Roret-kunder ber Roret
-   (support@roret.no), og i Roret for Odoo gjør administratoren hos bedriften
-   de stegene.
+7. **Det Roret gjør for Roret-kunder:** å opprette kontoer og journaler, å
+   sette kontonummer og valuta på en journal, å slå på en valuta og å sette
+   låsedatoer krever rollen Regnskap: Administrator. Kundens administrator i
+   Roret har Regnskap, men ikke den rollen, så Roret gjør disse stegene. I
+   Roret for Odoo gjør administratoren hos bedriften dem.
+
+   | Steg | Det Roret gjør |
+   |---|---|
+   | 4 | Oppretter de nye kontoene og overgangskontoen 1599 |
+   | 6 | Oppretter bankjournalene som mangler, setter kontonummeret og valutaen på bankjournalene, og slår på valutaene som ikke er på |
+   | 9 | Oppretter migreringsjournalene MIGK og MIGL |
+   | 13 | Setter låsedatoene når avstemmingen er godkjent |
+
+   Resten gjør kunden selv: Flytt regnskapsåret (steg 3), MVA-kodene (5),
+   kundene og leverandørene (7), leverandørenes bankkontoer med
+   godkjenningen for utbetaling (8), åpningsbalansen (10) og de åpne
+   fakturaene (11).
+
+   For en Roret-kunde tar du steg 4, 6 og 9 rett etter steg 3, og får
+   tabellene godkjent. Så lager du én e-post til Roret med alt, også
+   låsedatoene. Vis den, og la brukeren sende den. Steg 5, 7 og 8 kan gjøres
+   mens Roret gjør sin del. Steg 10 venter til Roret har svart, og du leser
+   kontoene og journalene tilbake før du går videre (steg 4, 6 og 9 i
+   [metode.md](metode.md)). Når avstemmingen i steg 12 er godkjent, svarer
+   brukeren i den samme tråden, og Roret låser perioden.
+
+   ```
+   Til: support@roret.no
+   Emne: Flytting til Roret: <selskap>, org.nr. <orgnr>
+
+   Vi flytter regnskapet fra <kildesystem> til Roret, med byttedato <dato>.
+   Vil dere gjøre dette i regnskapet vårt?
+
+   1. Nye kontoer (steg 4): <tabellen med nummer, navn, type og avstemmbar>.
+      1599 er overgangskontoen og skal ikke ha MVA.
+   2. Bankjournaler (steg 6): <tabellen med navn, kode, kontonummer og
+      valuta>. Valutaer som skal slås på: <valutaene, eller «ingen»>.
+   3. Migreringsjournaler (steg 9): «Migrering kunder» (type Salg, kode MIGK)
+      og «Migrering leverandører» (type Innkjøp, kode MIGL), begge med egen
+      nummerserie for kreditnotaer.
+   4. Låsedatoene (steg 13): <D-1> for alle og for MVA. Sett dem først når
+      vi svarer i denne tråden at avstemmingen er godkjent.
+
+   Hilsen <navn>
+   ```
 
 ⛔ Oppsummer rammen (selskap, kilde, byttedato, lønn med eller ikke) og få ja.
 
@@ -104,6 +144,20 @@ Brukeren gjør det i **Flytt regnskapsåret**. Der leses fila på serveren, den
 arkiveres i dokumentarkivet med sjekksum, og den kontrolleres i en
 prøvekjøring. Prøvekjøringen skriver ingenting i regnskapet.
 
+Sjekk først at brukeren har Flytt regnskapsåret, før du sender hen til
+menyen:
+
+```
+odoo_search_read("roret.migrering.kjoring", [], ["id"], limit=1, company_id=<C>)
+```
+
+- **En liste, også en tom:** menyvalget er der. Gå videre.
+- **Modellen finnes ikke:** Flytt regnskapsåret er ikke installert. En ny
+  tenant i Roret har det. En tenant fra før det kom i malen, får det av
+  Roret: be brukeren skrive til support@roret.no, og vent med steg 3.
+- **Tilgangsfeil:** brukeren mangler rollen Regnskap. I Roret gir Roret den
+  (support@roret.no). I Roret for Odoo gjør administratoren det.
+
 1. Brukeren åpner Regnskap → Bokføring → Flytt regnskapsåret, lager en ny
    kjøring, laster opp SAF-T-fila slik det gamle systemet lagde den (XML
    eller ZIP) og trykker «Les fila».
@@ -119,9 +173,6 @@ prøvekjøring. Prøvekjøringen skriver ingenting i regnskapet.
    på 30 dager, og setter den til «Forkastet». At du leser den, teller ikke
    som en endring. Sjekk `tilstand` hver gang du leser grunnlaget. Er den
    `forkastet`, må fila leses i en ny kjøring.
-
-Finnes ikke menyvalget, er funksjonen ikke slått på. Roret-kunder ber Roret
-om det (support@roret.no). Brukeren trenger rollen Regnskap.
 
 Når statusen er «Prøvekjøringen er klar», leser du kjøringen og avvikene.
 `<K>` er kjøringens id:
@@ -203,7 +254,9 @@ kontrollere den (support@roret.no).
 
 ## Steg 4–13: Overføringen
 
-Følg [metode.md](metode.md). Stoppunktene:
+Følg [metode.md](metode.md). Der det står at brukeren oppretter eller setter
+noe i Odoo i steg 4, 6, 9 og 13, gjør Roret det for Roret-kunder, fra
+e-posten i steg 1, punkt 7. Stoppunktene:
 
 4. **Kontoplanen.** Kildekonto → konto i Roret (finnes, eller ny med foreslått
    type). ⛔ Brukeren godkjenner tabellen og oppretter de nye kontoene i Odoo
