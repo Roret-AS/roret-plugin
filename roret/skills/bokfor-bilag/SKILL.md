@@ -81,11 +81,49 @@ utkastene for hver porsjon før du går videre.
 En vanlig PDF-faktura uten e-faktura i seg gir et tomt utkast med fila
 påhengt (`dekodet` er `false`, og svaret har en advarsel). Roret leser ikke
 PDF-er selv. Du kan ikke fylle ut hodet på det tomme utkastet herfra, så si
-fra om det, lag utkastet selv som under, og foreslå at det tomme slettes med
-`slett_utkastfaktura` etter ja (det blir et forslag til godkjenning).
+fra om det, og lag fakturaen selv som under. Husk id-en til det tomme
+utkastet: PDF-en flyttes derfra til fakturaen når den er laget. Ikke slett
+det tomme utkastet med `slett_utkastfaktura`. Det blir et forslag som
+kansellerer utkastet, og da blir PDF-en stående på det, mens bilaget som
+bokføres, mangler dokumentasjonen.
 
-Går ikke `motta_bilag` (for eksempel en PDF uten e-faktura, eller et bilde
-uten tekst), lag utkastet selv fra det du leste:
+**Hører fakturaen til et innkjøp?** Sjekk det før du lager et utkast fra
+bunnen, også når `motta_bilag` ga et tomt utkast. Finn leverandøren først
+(punkt 1 under), og søk etter innkjøp som venter på fakturaen:
+
+```
+odoo_search_read("purchase.order", [["partner_id", "child_of", <leverandør-id>], ["state", "=", "purchase"], ["invoice_status", "in", ["to invoice", "no"]]], ["name", "partner_ref", "date_order", "amount_total", "invoice_status"], company_id=<id>)
+```
+
+- Finnes innkjøpet fakturaen gjelder, lag fakturaen fra det, ikke med
+  `opprett_faktura`. Ellers står innkjøpet fortsatt «til fakturering», og
+  varene kan bli fakturert to ganger. Innkjøpsnummeret står ofte på
+  fakturaen. Ellers ser du det på leverandøren, varene og beløpet. Vis
+  først hva som faktureres, og sammenlign linjene og beløpet med
+  dokumentet:
+
+  ```
+  fakturer_innkjop(order_id=<id>, invoice_date="YYYY-MM-DD", ref="<leverandørens fakturanr>", dry_run=True, company_id=<id>)
+  ```
+
+  Etter ja, gjør samme kall uten `dry_run`. Fakturaen får linjene, prisene
+  og MVA-kodene fra innkjøpet. Avviker dokumentet (et annet antall eller en
+  annen pris), si hva som avviker, og rett linja med `oppdater_fakturalinje`
+  etter ja. Flytt så PDF-en og kontroller utkastet som under, også forfall
+  og KID.
+- Kan flere innkjøp passe, spør hvilket.
+- Står innkjøpet med `invoice_status` «no», er varene ikke mottatt ennå. Si
+  det, og spør om mottaket skal valideres først (`valider_plukk`), eller om
+  fakturaen skal vente. Lag den ikke med `opprett_faktura`.
+- Ga `motta_bilag` et utfylt utkast (e-faktura), og står innkjøpet
+  fortsatt «to invoice», er utkastet ikke koblet til innkjøpet. Bruk ikke
+  `fakturer_innkjop`, for da blir det to fakturaer. Be brukeren koble
+  utkastet til innkjøpet med «Innkjøpsmatching» på bilaget i Roret før det
+  bokføres.
+
+Finnes det ikke noe innkjøp, og går ikke `motta_bilag` (for eksempel en PDF
+uten e-faktura, eller et bilde uten tekst), lag utkastet selv fra det du
+leste:
 
 1. Finn leverandøren: `finn_kunde(query="<navn eller org.nr>")`. Den søker
    ikke i alle feltene for org.nr, så søk også
@@ -99,6 +137,23 @@ uten tekst), lag utkastet selv fra det du leste:
 forfall etter betalingsbetingelsen i Roret, ikke etter dokumentet. Si hva
 dokumentet sier om forfall og KID, og be brukeren legge det inn på utkastet i
 Roret før det bokføres. Uten det blir likviditetsbildet og betalingen feil.
+
+**PDF-en følger bilaget.** Ga `motta_bilag` et tomt utkast, flytt fila
+derfra til fakturaen du laget (med `fakturer_innkjop` eller
+`opprett_faktura`) før du kontrollerer, og før fakturaen bokføres. Ta det
+med i samme ja som utkastet:
+
+```
+flytt_bilagsvedlegg(fra_bilag_id=<det tomme utkastet>, til_bilag_id=<fakturaen>, company_id=<id>)
+```
+
+Fila blir hovedvedlegget på fakturaen, og det tomme utkastet kanselleres
+uten den. Ingenting slettes, og kanselleringen kan angres i Roret. Bare et
+helt tomt utkast som `motta_bilag` laget for deg, kan flyttes fra. Har det
+ingen leverandør, sjekker verktøyet at PDF-en nevner fakturanummeret eller
+leverandørens org.nr., så sett leverandørens fakturanummer som `ref` når
+fakturaen lages. Er fakturaen alt bokført, flyttes ingenting herfra: be
+brukeren legge PDF-en ved fakturaen i Roret.
 
 **Kontroller utkastet før bokføring.** Les det tilbake, med linjene og
 MVA-kodene, i ett kall:
@@ -161,8 +216,9 @@ det til godkjenning i Odoo.
 
 ## Steg 5: Arkiver dokumentet på riktig post
 
-Etter at bilaget er laget, legg dokumentet på bilaget i arkivet. Det kan tas
-med i samme ja som utkastet, hvis du sa det da:
+Etter at bilaget er laget, legg dokumentet på bilaget i arkivet: på
+fakturaen som bokføres, ikke på det tomme utkastet fra `motta_bilag`. Det
+kan tas med i samme ja som utkastet, hvis du sa det da:
 
 ```
 flytt_dokument(document_id=<id>, res_model="account.move", res_id=<move_id>, company_id=<id>)
@@ -182,6 +238,12 @@ med `hent_dokumentmapper(company_id=<id>)` og spør hvis det er uklart.
 
 - Bokfør aldri uten at brukeren har sett leverandør, beløp, konto og MVA.
 - Utlegg over et beløp brukeren synes er stort: spør en ekstra gang.
+- En leverandørfaktura for et innkjøp lages fra innkjøpet med
+  `fakturer_innkjop`. Ellers står innkjøpet «til fakturering», og varene kan
+  bli fakturert to ganger.
+- PDF-en skal ligge på bilaget som bokføres. Fra et tomt utkast fra
+  `motta_bilag` flyttes den med `flytt_bilagsvedlegg`. Utkastet slettes
+  aldri med `slett_utkastfaktura`.
 - Et bokført bilag rettes med kreditnota, aldri sletting (`roret-prinsipper` §4).
 - Kontovalg som avhenger av en regel, og spørsmål om dokumentasjonskrav,
   oppbevaringstid eller fradragsrett for MVA: slå opp med `lov_oppslag` og
