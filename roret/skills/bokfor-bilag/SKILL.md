@@ -131,12 +131,12 @@ leste:
    (utelat feltet som ikke finnes). Finnes den ikke, foreslå
    `opprett_kontakt(name=..., is_company=True, company_registry="<orgnr>", vat=..., company_id=<id>)`
    og vent på ja. Bruk gjerne `kundesjekk`-skillen.
-2. `opprett_faktura(partner_id=<id>, lines=[...], move_type="in_invoice", invoice_date="YYYY-MM-DD", ref="<leverandørens fakturanr>", company_id=<id>)`
+2. `opprett_faktura(partner_id=<id>, lines=[...], move_type="in_invoice", invoice_date="YYYY-MM-DD", invoice_date_due="YYYY-MM-DD", ref="<leverandørens fakturanr>", payment_reference="<KID>", company_id=<id>)`
 
-`opprett_faktura` setter ikke forfall og KID. Et utkast du lager selv, får
-forfall etter betalingsbetingelsen i Roret, ikke etter dokumentet. Si hva
-dokumentet sier om forfall og KID, og be brukeren legge det inn på utkastet i
-Roret før det bokføres. Uten det blir likviditetsbildet og betalingen feil.
+Ta med forfallet og KID-en dokumentet oppgir. Uten forfallet følger det
+betalingsbetingelsen i Roret, ikke dokumentet, og da blir likviditetsbildet
+og betalingen feil. Oppgir dokumentet ingen KID, utelat `payment_reference`
+og si det til brukeren.
 
 **PDF-en følger bilaget.** Ga `motta_bilag` et tomt utkast, flytt fila
 derfra til fakturaen du laget (med `fakturer_innkjop` eller
@@ -183,7 +183,10 @@ mot dokumentet:
   vis det og spør før du bokfører.
 
 Rett feil med `oppdater_fakturalinje(line_id=..., account_id=..., tax_ids=[...], company_id=<id>)`
-etter ja til den konkrete endringen (fra hva, til hva). Slå opp kontoer og
+etter ja til den konkrete endringen (fra hva, til hva). Stemmer ikke
+forfallet eller KID-en med dokumentet, også på et utkast fra `motta_bilag`,
+rett dem med `oppdater_faktura(move_id=<move_id>, invoice_date_due="YYYY-MM-DD", payment_reference="<KID>", company_id=<id>)`
+på samme måte. Slå opp kontoer og
 skatter, aldri gjett id-er. Slå dem opp med `context={"lang": "nb_NO"}`:
 uten den kommer kontonavnene på engelsk, og MVA-kodene heter «25%» og
 «25% EX S D» i stedet for «1 Inngående MVA 25 %» og «86 Tjenester fra
