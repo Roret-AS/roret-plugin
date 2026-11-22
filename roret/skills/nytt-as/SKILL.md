@@ -13,7 +13,8 @@ tallene og kontrollerer at de stemmer.
 
 Aksjeeierboken og hovedboka er låst for Assistent. Følg `roret-prinsipper`,
 og bruk `firmaprofil` for selskapet (`<C>` er `company_id`). Krever at
-brukeren har regnskapsrollen, for aksjeeierboken ligger i Regnskap.
+brukeren har regnskapsrollen: tilgangen til aksjeeierboken følger
+regnskapsgruppene, og menyen står i Styring → Eierskap.
 
 ## Steg 1: Tallene fra stiftelsesdokumentet
 
@@ -64,7 +65,7 @@ Les det som finnes:
 odoo_search_read("roret.aksjeklasse", [], ["id", "name", "palydende", "antall_aksjer", "aksjekapital"], company_id=<C>)
 ```
 
-Finnes ingen klasse, lager brukeren den: Regnskap → Bokføring → Aksjeeierbok →
+Finnes ingen klasse, lager brukeren den: Styring → Eierskap →
 **Aksjeklasser** → **Ny**. Navnet er «Ordinære aksjer» når selskapet bare har
 én klasse. Brukeren fyller inn **Pålydende** fra stiftelsesdokumentet. Flere
 klasser står i vedtektene.
@@ -77,8 +78,8 @@ Lag tabellen først: én linje per stifter, med antall aksjer, kursen og
 aksjenummer fra og til. Aksjenummerne går fortløpende fra 1, og hver stifter
 får sitt intervall. Vis den til brukeren.
 
-Brukeren fører én transaksjon per stifter: Regnskap → Bokføring →
-Aksjeeierbok → **Aksjetransaksjoner** → **Ny**:
+Brukeren fører én transaksjon per stifter: Styring → Eierskap →
+**Aksjetransaksjoner** → **Ny**:
 
 | Felt | Verdi |
 |---|---|
@@ -101,8 +102,8 @@ odoo_search_read("roret.aksjetransaksjon", [["type", "=", "stiftelse"]], ["dato"
 
 Summen av antall skal være antall aksjer, summen av `belop` det samlede
 innskuddet, og aksjekapitalen på klassen (steg 3) skal være lik den i
-stiftelsesdokumentet. Aksjeeierboken med eierandeler står under Regnskap →
-Bokføring → Aksjeeierbok → **Aksjeeierbok**.
+stiftelsesdokumentet. Aksjeeierboken med eierandeler står under Styring →
+Eierskap → **Aksjeeiere**.
 
 ## Steg 5: Bokfør aksjekapitalen
 
@@ -146,7 +147,7 @@ stemmer, og hvilken side som mangler.
 
 ## Etterpå
 
-- **Reelle rettighetshavere:** Regnskap → Bokføring → Aksjeeierbok →
+- **Reelle rettighetshavere:** Styring → Eierskap →
   **Reelle rettighetshavere**. Slå opp hvem som regnes som det med
   `lov_oppslag` (hvitvaskingsloven).
 - **Styret og generalforsamlingen:** `styremote` og `frister`. Varsler om
