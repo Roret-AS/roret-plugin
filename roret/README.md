@@ -77,6 +77,7 @@ eksempel `/roret:purring`.
 |---|---|
 | `innboks-til-leads` | Finner kundehenvendelser i e-posten og gjør dem til leads |
 | `epost-og-kalender` | Kobler Microsoft 365 eller Google Workspace med Odoo |
+| `motereferat` | Legger referatet fra Claude Meetings på møtet i Roret, skriver et sammendrag på kunden og lager oppgavene etter godkjenning |
 | `folg-opp` | Oppsummerer en kunde eller salgsmulighet og foreslår neste steg |
 | `pipeline` | Finner salgsmuligheter som har stått stille |
 | `kundesjekk` | Slår opp nye kunder og leverandører i Brønnøysundregistrene |

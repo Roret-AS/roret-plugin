@@ -65,7 +65,8 @@ Rapporten sendes til styret fra Roret, ikke herfra.
 
 ## Protokoll
 
-Har brukeren notater eller en transkripsjon fra møtet:
+Har brukeren notater eller en transkripsjon fra møtet (kommer den fra Claude
+Meetings, finner `motereferat` møtet i Styring først):
 
 1. `hent_styremote(meeting_id=<id>)` for sakene og deres `item_id`.
 2. Skriv nøktern protokolltekst per sak: hva som ble behandlet, og vedtaket

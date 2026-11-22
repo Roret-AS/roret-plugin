@@ -57,6 +57,8 @@ roret-MCP-en virker fullt ut uten dem.
    `planlegg_aktivitet(model="crm.lead", res_id=<id>, activity_type_id=<møte>, summary=<emne>, date_deadline=<møtedato>)`.
 4. Etter møtet: `marker_aktivitet_ferdig(activity_id=..., feedback=<kort referat>)`
    og et notat med det som ble avtalt.
+   Har brukeren referatet fra Claude Meetings eller en transkripsjon, bruk
+   `motereferat`.
 
 Interne møter som skal synes i Odoo-kalenderen:
 `opprett_kalenderhendelse(name=..., start=..., stop=..., res_model=..., res_id=...)`.
