@@ -56,11 +56,41 @@ Alt i dette steget skriver i regnskapet, også utkastene (`roret-prinsipper`
 porsjon holder («Jeg lager utkast av disse fem fakturaene. OK?»).
 
 Foretrukket vei er `motta_bilag`. Odoo leser selv EHF/Peppol-XML og
-Factur-X, lager fakturalinjene og henger fila på bilaget:
+Factur-X, lager fakturalinjene og henger fila på bilaget.
+
+**Har du et skall (curl), last fila opp utenom samtalen.** Da går den ikke
+gjennom kontekstvinduet, koster ingen tokens og kan ikke skrives av feil:
+
+```
+lag_opplastingslenke(filnavn="<filnavn med endelse>", company_id=<id>)
+```
+
+Last opp med kommandoen i svaret (`curl --fail-with-body -sS -T <fil> '<url>'`).
+Svaret er JSON med `attachment_id`. Lag så utkastet:
+
+```
+motta_bilag(vedlegg_ids=[<attachment_id>], bilagstype="in_invoice", company_id=<id>)
+```
+
+Lenken virker én gang og i 15 minutter. Ligger fila bak en annen adresse,
+hent den med skallet og send den videre (`curl -sS '<kilde>' | curl
+--fail-with-body -sS -T - '<url>'`). Lenken finnes bare i den hostede
+Roret-MCP-en.
+
+**Uten skall** kan en liten fil sendes som base64 i kallet. Det går gjennom
+kontekstvinduet, så bruk det bare når fila er liten:
 
 ```
 motta_bilag(filer=[{"name": "<filnavn med endelse>", "content_base64": "<base64>"}], bilagstype="in_invoice", company_id=<id>)
 ```
+
+**Kom fakturaen på e-post**, kan e-posten videresendes til
+innkjøpsjournalens e-postadresse. Da går fila rett fra e-post til Odoo, og
+utkastet lages der. Det forutsetter at basen tar imot e-post (innkommende
+e-post er satt opp). Finn adressen med
+`odoo_search_read("account.journal", [["type", "=", "purchase"]], ["name", "alias_email"], company_id=<id>)`.
+Står `alias_email` tom, tar journalen ikke imot e-post. En vanlig PDF blir
+også der et tomt utkast, som fylles ut med `fyll_bilag` som under.
 
 Ligger fila alt i Odoo som vedlegg på en annen post, for eksempel en
 faktura som kom inn på chatteren til en kontakt (`hent_chatter_vedlegg`),
@@ -71,7 +101,8 @@ motta_bilag(vedlegg_ids=[<ir.attachment-id>], bilagstype="in_invoice", company_i
 ```
 
 Bilaget får en kopi, og originalen blir hengende der den var. Svaret viser
-hva som ble kopiert fra hva (`kopiert_fra`). Bruk enten `filer` eller
+hva som ble kopiert fra hva (`kopiert_fra`). Et vedlegg fra din egen
+opplastingslenke brukes direkte (`brukt_direkte`). Bruk enten `filer` eller
 `vedlegg_ids` i ett kall, ikke begge.
 
 Én fil gir ett utkast. Har du både PDF og XML for samme faktura, send bare
@@ -79,13 +110,13 @@ hva som ble kopiert fra hva (`kopiert_fra`). Bruk enten `filer` eller
 utkastene for hver porsjon før du går videre.
 
 En vanlig PDF-faktura uten e-faktura i seg gir et tomt utkast med fila
-påhengt (`dekodet` er `false`, og svaret har en advarsel). Roret leser ikke
-PDF-er selv. Du kan ikke fylle ut hodet på det tomme utkastet herfra, så si
-fra om det, og lag fakturaen selv som under. Husk id-en til det tomme
-utkastet: PDF-en flyttes derfra til fakturaen når den er laget. Ikke slett
-det tomme utkastet med `slett_utkastfaktura`. Det blir et forslag som
-kansellerer utkastet, og da blir PDF-en stående på det, mens bilaget som
-bokføres, mangler dokumentasjonen.
+påhengt (`dekodet` er `false`, og svaret har en advarsel). Odoo leser ikke
+vanlige PDF-er. Les dokumentet selv, og fyll ut utkastet med `fyll_bilag`
+(under). Sjekk først om fakturaen hører til et innkjøp: da lages den fra
+innkjøpet i stedet, og PDF-en flyttes dit. Ikke slett det tomme utkastet
+med `slett_utkastfaktura`. Det blir et forslag som kansellerer utkastet, og
+da blir PDF-en stående på det, mens bilaget som bokføres, mangler
+dokumentasjonen.
 
 **Hører fakturaen til et innkjøp?** Sjekk det før du lager et utkast fra
 bunnen, også når `motta_bilag` ga et tomt utkast. Finn leverandøren først
@@ -121,9 +152,33 @@ odoo_search_read("purchase.order", [["partner_id", "child_of", <leverandør-id>]
   utkastet til innkjøpet med «Innkjøpsmatching» på bilaget i Roret før det
   bokføres.
 
-Finnes det ikke noe innkjøp, og går ikke `motta_bilag` (for eksempel en PDF
-uten e-faktura, eller et bilde uten tekst), lag utkastet selv fra det du
-leste:
+**Finnes det ikke noe innkjøp, fyll ut utkastet fra `motta_bilag`** med det
+du leste i dokumentet. Si hva du setter, og vent på ja (det kan være samme
+ja som for utkastet):
+
+```
+fyll_bilag(move_id=<utkastet>, leverandor="<org.nr., navn eller id>", fakturadato="YYYY-MM-DD", forfall="YYYY-MM-DD", fakturanummer="<leverandørens fakturanr>", kid="<KID>", valuta="<ISO-kode>", linjer=[{"beskrivelse": "...", "belop": <eks. MVA>, "konto": "<kontonr>", "tax_ids": [<id>]}], forventet_total=<totalt inkl. MVA>, company_id=<id>)
+```
+
+- `leverandor` slås opp og må være entydig. Passer navnet eller org.nr. på
+  flere, svarer verktøyet med kandidatene: spør brukeren, og bruk id-en.
+  Finnes den ikke, opprett den som i punkt 1 under.
+- Har leverandøren alt et bilag med samme fakturanummer, avvises kallet, og
+  ingenting endres. Vis bilaget, og spør. Sett `tillat_dublett=True` bare
+  når brukeren har sagt at det er et annet bilag.
+- I fremmed valuta brukes kursen Odoo har for fakturadatoen. Mangler den,
+  avvises kallet: be brukeren hente kursen i Roret. Gjett aldri en kurs.
+- Svaret er kontrollen fra `hent_bilag`, og i tillegg `forslag` (konto og
+  MVA-kode leverandøren oftest er ført med) og `maa_slaas_opp`. Forslaget er
+  bare et forslag. Står det noe i `maa_slaas_opp` (kjøp fra utlandet, en
+  eiendelskonto), slå opp regelen med `lov_oppslag` før du bokfører, og
+  oppgi paragrafen til brukeren. `kontroll.avvik_total` sier om totalen
+  avviker fra dokumentet.
+- `mulige_banklinjer` er uavstemte banklinjer som kan være betalingen, for
+  eksempel et kortkjøp (se steg 3b).
+
+Går ikke `motta_bilag` i det hele tatt (for eksempel uten tilgang til fila),
+lag utkastet selv fra det du leste:
 
 1. Finn leverandøren: `finn_kunde(query="<navn eller org.nr>")`. Den søker
    ikke i alle feltene for org.nr, så søk også
@@ -199,6 +254,29 @@ MVA, totalt) og spør om utkastet skal bokføres. Ved ja:
 bokfor_bilag(move_id=<move_id>, company_id=<id>)
 ```
 
+Bokføringen blir som regel et forslag i Roret (Assistent → Til
+godkjenning), og bilaget bokføres når et menneske godkjenner. Har
+administratoren valgt «Bilag under grense» under Assistent → Konfigurasjon
+→ Hva Assistent får gjøre, bokføres bilag under grensen med en gang. Grensen
+settes bare der, aldri herfra.
+
+## Steg 3b: Betalt med kort? Koble mot banklinja
+
+Er bilaget betalt (et kortkjøp eller en kvittering), og banklinja er
+importert, avstem den mot bilaget når det er bokført. `fyll_bilag` og
+`bokfor_bilag` gir `mulige_banklinjer`: samme beløp, samme beløp i
+fakturaens valuta, eller omtrent samme beløp (kortet bruker bankens
+valutakurs). Vis treffet, og avstem etter ja med det vanlige verktøyet,
+slik `avstem-bank` beskriver:
+
+```
+avstem_banklinje_mot_faktura(bank_line_id=<banklinje_id>, invoice_id=<move_id>, company_id=<id>)
+```
+
+Er beløpet bare omtrent likt, er differansen en kursdifferanse. Ta den med
+`avstem-bank`. Finnes ingen treff, er banklinja kanskje ikke importert
+ennå: si det, og la bilaget stå åpent.
+
 ## Steg 4: Utlegg (ansatt har betalt)
 
 1. Finn den ansatte: `hent_ansatte(company_id=<id>)`.
@@ -244,9 +322,12 @@ med `hent_dokumentmapper(company_id=<id>)` og spør hvis det er uklart.
 - En leverandørfaktura for et innkjøp lages fra innkjøpet med
   `fakturer_innkjop`. Ellers står innkjøpet «til fakturering», og varene kan
   bli fakturert to ganger.
-- PDF-en skal ligge på bilaget som bokføres. Fra et tomt utkast fra
-  `motta_bilag` flyttes den med `flytt_bilagsvedlegg`. Utkastet slettes
+- PDF-en skal ligge på bilaget som bokføres. Fyll ut det tomme utkastet fra
+  `motta_bilag` med `fyll_bilag`, eller flytt PDF-en derfra med
+  `flytt_bilagsvedlegg` når fakturaen lages fra et innkjøp. Utkastet slettes
   aldri med `slett_utkastfaktura`.
+- Fila går helst utenom samtalen: `lag_opplastingslenke` og `curl -T` når du
+  har et skall.
 - Et bokført bilag rettes med kreditnota, aldri sletting (`roret-prinsipper` §4).
 - Kontovalg som avhenger av en regel, og spørsmål om dokumentasjonskrav,
   oppbevaringstid eller fradragsrett for MVA: slå opp med `lov_oppslag` og
